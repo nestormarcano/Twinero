@@ -1,0 +1,207 @@
+= Single Banking API REST Reference
+Nestor Marcano v1.0
+:page-layout: docs
+:toc: left
+:icons: font
+:source-highlighter: coderay
+// refs:
+:imagesdir: ../images
+:includedir: _includes
+:docref: https://asciidoctor.org/docs
+:user-ref: {docref}/user-manual
+:install-ref: {docref}/install-toolchain
+:fopub-doc-ref: https://github.com/asciidoctor/asciidoctor-fopub/blob/master/README.adoc
+:uri-docbook5: https://tdg.docbook.org/tdg/5.0/ch01.html#introduction-whats-new
+:uri-yelp: https://wiki.gnome.org/action/show/Apps/Yelp
+:backends-repo-ref: https://github.com/asciidoctor/asciidoctor-backends
+:quick-ref: {docref}/asciidoc-syntax-quick-reference
+:build-ref: {docref}/produce-custom-themes-using-asciidoctor-stylesheet-factory/
+:showcase-ref: http://themes.asciidoctor.org/
+:discuss-ref: http://discuss.asciidoctor.org
+
+// =========================================================================================================== Sign ups
+// ====================================================================================================================
+== Resource: sign-ups
+Contains the client's sign ups. +
+
+=== Simple sign-up
+==== Request
+include::{snippets}/signups/signup/http-request.adoc[]
+==== Response
+include::{snippets}/signups/signup/http-response.adoc[]
+
+=== Invalid sign-up
+==== Request
+include::{snippets}/signups/notSignup/http-request.adoc[]
+==== Response
+include::{snippets}/signups/notSignup/http-response.adoc[]
+
+=== Malformed sign-up
+==== Request
+include::{snippets}/signups/notSignupMalformedEmail/http-request.adoc[]
+==== Response
+include::{snippets}/signups/notSignupMalformedEmail/http-response.adoc[]
+
+=== Server error
+==== Request
+include::{snippets}/signups/notSignupServerError/http-request.adoc[]
+==== Response
+include::{snippets}/signups/notSignupServerError/http-response.adoc[]
+
+
+// =========================================================================================================== Sessions
+// ====================================================================================================================
+== Resource: sessions
+Contains the client's sessions. +
+
+=== Simple login
+==== Request
+include::{snippets}/sessions/login/http-request.adoc[]
+==== Response
+include::{snippets}/sessions/login/http-response.adoc[]
+
+=== Invalid login
+==== Request
+include::{snippets}/sessions/notLogin/http-request.adoc[]
+==== Response
+include::{snippets}/sessions/notLogin/http-response.adoc[]
+
+=== Malformed login
+==== Request
+include::{snippets}/sessions/notLoginMalformedEmail/http-request.adoc[]
+==== Response
+include::{snippets}/sessions/notLoginMalformedEmail/http-response.adoc[]
+
+=== Server error
+==== Request
+include::{snippets}/sessions/notLoginServerError/http-request.adoc[]
+==== Response
+include::{snippets}/sessions/notLoginServerError/http-response.adoc[]
+
+// ==================================================================================================== accountBalances
+// ====================================================================================================================
+== Resource: accountBalances
+Get the account balance for a client given his client ID. +
+
+=== Get the account balance successfully
+==== Request
+include::{snippets}/accountBalances/accountBalance/http-request.adoc[]
+==== Response
+include::{snippets}/accountBalances/accountBalance/http-response.adoc[]
+
+=== Session expired
+==== Request
+include::{snippets}/accountBalances/expiredSession/http-request.adoc[]
+==== Response
+include::{snippets}/accountBalances/expiredSession/http-response.adoc[]
+
+=== Session doesn't exist
+==== Request
+include::{snippets}/accountBalances/sessionDoesNotExist/http-request.adoc[]
+==== Response
+include::{snippets}/accountBalances/sessionDoesNotExist/http-response.adoc[]
+
+=== Server error
+==== Request
+include::{snippets}/accountBalances/notAccountBalanceServerError/http-request.adoc[]
+==== Response
+include::{snippets}/accountBalances/notAccountBalanceServerError/http-response.adoc[]
+
+// ================================================================================================== accountStatements
+// ====================================================================================================================
+== Resource: accountStatements
+Get the account statement for a client given his client ID. +
+
+=== Get the account statement successfully
+==== Request
+include::{snippets}/accountStatements/accountStatement/http-request.adoc[]
+==== Response
+include::{snippets}/accountStatements/accountStatement/http-response.adoc[]
+
+=== Session expired
+==== Request
+include::{snippets}/accountStatements/expiredSession/http-request.adoc[]
+==== Response
+include::{snippets}/accountStatements/expiredSession/http-response.adoc[]
+
+=== Session doesn't exist
+==== Request
+include::{snippets}/accountStatements/sessionDoesNotExist/http-request.adoc[]
+==== Response
+include::{snippets}/accountStatements/sessionDoesNotExist/http-response.adoc[]
+
+=== Server error
+==== Request
+include::{snippets}/accountStatements/notAccountStatementServerError/http-request.adoc[]
+==== Response
+include::{snippets}/accountStatements/notAccountStatementServerError/http-response.adoc[]
+
+// =========================================================================================================== deposits
+// ====================================================================================================================
+== Resource: deposits
+Contains the deposits of clients. +
+
+=== Performs a deposit successfully
+==== Request
+include::{snippets}/deposits/deposit/http-request.adoc[]
+==== Response
+include::{snippets}/deposits/deposit/http-response.adoc[]
+
+=== Invalid client
+==== Request
+include::{snippets}/deposits/ivalidDepositBecauseInvalidClient/http-request.adoc[]
+==== Response
+include::{snippets}/deposits/ivalidDepositBecauseInvalidClient/http-response.adoc[]
+
+=== Session expired
+==== Request
+include::{snippets}/deposits/expiredSession/http-request.adoc[]
+==== Response
+include::{snippets}/deposits/expiredSession/http-response.adoc[]
+
+=== Session doesn't exist
+==== Request
+include::{snippets}/deposits/sessionDoesNotExist/http-request.adoc[]
+==== Response
+include::{snippets}/deposits/sessionDoesNotExist/http-response.adoc[]
+
+=== Server error
+==== Request
+include::{snippets}/deposits/serverError/http-request.adoc[]
+==== Response
+include::{snippets}/deposits/serverError/http-response.adoc[]
+
+// ========================================================================================================== withdraws
+// ====================================================================================================================
+== Resource: withdraws
+Contains the withdraws of clients. +
+
+=== Performs a withdraw successfully
+==== Request
+include::{snippets}/withdraws/withdraw/http-request.adoc[]
+==== Response
+include::{snippets}/withdraws/withdraw/http-response.adoc[]
+
+=== Invalid client
+==== Request
+include::{snippets}/withdraws/invalidClient/http-request.adoc[]
+==== Response
+include::{snippets}/withdraws/invalidClient/http-response.adoc[]
+
+=== Session expired
+==== Request
+include::{snippets}/withdraws/expiredSession/http-request.adoc[]
+==== Response
+include::{snippets}/withdraws/expiredSession/http-response.adoc[]
+
+=== Session doesn't exist
+==== Request
+include::{snippets}/withdraws/sessionDoesNotExist/http-request.adoc[]
+==== Response
+include::{snippets}/withdraws/sessionDoesNotExist/http-response.adoc[]
+
+=== Server error
+==== Request
+include::{snippets}/withdraws/serverError/http-request.adoc[]
+==== Response
+include::{snippets}/withdraws/serverError/http-response.adoc[]
