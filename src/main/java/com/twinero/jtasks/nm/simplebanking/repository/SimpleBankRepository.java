@@ -4,9 +4,13 @@ import org.springframework.stereotype.Repository;
 
 import com.twinero.jtasks.nm.simplebanking.beans.AccountBalanceResp;
 import com.twinero.jtasks.nm.simplebanking.beans.AccountStatementResp;
+import com.twinero.jtasks.nm.simplebanking.beans.Deposit;
+import com.twinero.jtasks.nm.simplebanking.beans.DepositResp;
 import com.twinero.jtasks.nm.simplebanking.beans.Session;
 import com.twinero.jtasks.nm.simplebanking.beans.Sign;
 import com.twinero.jtasks.nm.simplebanking.beans.SignupResp;
+import com.twinero.jtasks.nm.simplebanking.beans.Withdraw;
+import com.twinero.jtasks.nm.simplebanking.beans.WithdrawResp;
 import com.twinero.jtasks.nm.simplebanking.exception.SimpleBankServiceException;
 
 @Repository
@@ -70,5 +74,37 @@ public interface SimpleBankRepository
 	// -----------------------------------------------------------------------------------------------------------------
 	public AccountStatementResp getAccountStatement (	long clientID,
 																		String sessionID )
+		throws SimpleBankServiceException;
+
+	// -----------------------------------------------------------------------------------------------------------------
+	// ------------------------------------------------------------------------------------------------------- doDeposit
+	/**
+	 * Performs a deposit in the client's account.
+	 * 
+	 * @param deposit The deposit request data.
+	 * @param sessionID The identification of the session.
+	 * 
+	 * @return The data of the response.
+	 * @throws SimpleBankServiceException Object indicating a service error.
+	 */
+	// -----------------------------------------------------------------------------------------------------------------
+	public DepositResp doDeposit (Deposit deposit,
+											String sessionID )
+		throws SimpleBankServiceException;
+
+	// -----------------------------------------------------------------------------------------------------------------
+	// ------------------------------------------------------------------------------------------------------ doWithdraw
+	/**
+	 * Performs a withdraw in the client's account.
+	 * 
+	 * @param withdraw The withdraw request data.
+	 * @param sessionID The identification of the session.
+	 * 
+	 * @return The data of the response.
+	 * @throws SimpleBankServiceException Object indicating a service error.
+	 */
+	// -----------------------------------------------------------------------------------------------------------------
+	public WithdrawResp doWithdraw (	Withdraw withdraw,
+												String sessionID )
 		throws SimpleBankServiceException;
 }

@@ -47,7 +47,13 @@ public interface SimpleBankService
 	// -----------------------------------------------------------------------------------------------------------------
 	// ----------------------------------------------------------------------------------------------- getAccountBalance
 	/**
-	 * {@inheritDoc}
+	 * Gets the account balance for a client.
+	 * 
+	 * @param clientID the client ID.
+	 * @param sessionID The session ID.
+	 * 
+	 * @return The data of the response.
+	 * @throws SimpleBankServiceException Object with the error data.
 	 */
 	// -----------------------------------------------------------------------------------------------------------------
 	public AccountBalanceResp getAccountBalance (long clientID,
@@ -57,7 +63,13 @@ public interface SimpleBankService
 	// -----------------------------------------------------------------------------------------------------------------
 	// --------------------------------------------------------------------------------------------- getAccountStatement
 	/**
-	 * {@inheritDoc}
+	 * Gets the account statement for a client.
+	 * 
+	 * @param clientID the client ID.
+	 * @param sessionID The session ID.
+	 * 
+	 * @return The data of the response.
+	 * @throws SimpleBankServiceException Object with the error data.
 	 */
 	// -----------------------------------------------------------------------------------------------------------------
 	public AccountStatementResp getAccountStatement (	long clientID,
@@ -67,7 +79,13 @@ public interface SimpleBankService
 	// -----------------------------------------------------------------------------------------------------------------
 	// ------------------------------------------------------------------------------------------------------- doDeposit
 	/**
-	 * {@inheritDoc}
+	 * Performs a deposit in the client's account.
+	 * 
+	 * @param deposit The deposit data.
+	 * @param sessionID The session ID.
+	 * 
+	 * @return The data of the response.
+	 * @throws SimpleBankServiceException Object with the error data.
 	 */
 	// -----------------------------------------------------------------------------------------------------------------
 	public DepositResp doDeposit (Deposit deposit,

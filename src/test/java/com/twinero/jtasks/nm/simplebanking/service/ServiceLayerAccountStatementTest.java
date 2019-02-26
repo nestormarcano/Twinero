@@ -16,14 +16,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.twinero.jtasks.nm.simplebanking.beans.AccountBalance;
-import com.twinero.jtasks.nm.simplebanking.beans.AccountBalanceResp;
+import com.twinero.jtasks.nm.simplebanking.beans.AccountStatement;
+import com.twinero.jtasks.nm.simplebanking.beans.AccountStatementResp;
 import com.twinero.jtasks.nm.simplebanking.exception.SimpleBankServiceException;
 import com.twinero.jtasks.nm.simplebanking.repository.SimpleBankRepository;
 
 @SpringBootTest
 @RunWith(SpringJUnit4ClassRunner.class)
-public class AccountBalanceServiceTest
+public class ServiceLayerAccountStatementTest
 {
 	@Autowired
 	private SimpleBankService service;
@@ -33,29 +33,29 @@ public class AccountBalanceServiceTest
 	private SimpleBankRepository repository;
 
 	// -----------------------------------------------------------------------------------------------------------------
-	// -------------------------------------------------------------------------------------- shouldReturnAccountBalance
+	// ------------------------------------------------------------------------------------ shouldReturnAccountStatement
 	/**
-	 * Gets a valid account balance.
+	 * Gets a valid account statement.
 	 */
 	// -----------------------------------------------------------------------------------------------------------------
 	@Test
-	public void shouldReturnAccountBalance ()
+	public void shouldReturnAccountStatement ()
 	{
 		try
 		{
 			long clientID = 10;
 			String sessionID = "5dd35b40-2410-11e9-b56e-0800200c9a66";
 
-			AccountBalance balance = new AccountBalance();
-			AccountBalanceResp expectedAccountBalance = new AccountBalanceResp(balance,
-					AccountBalanceResp.Status.OK);
+			AccountStatement statement = new AccountStatement();
+			AccountStatementResp expectedAccountStatement = new AccountStatementResp(statement,
+					AccountStatementResp.Status.OK);
 
-			when(repository.getAccountBalance(clientID, sessionID)).thenReturn(expectedAccountBalance);
+			when(repository.getAccountStatement(clientID, sessionID)).thenReturn(expectedAccountStatement);
 
-			AccountBalanceResp obtainedAccountBalance = service.getAccountBalance(clientID, sessionID);
+			AccountStatementResp obtainedAccountStatement = service.getAccountStatement(clientID, sessionID);
 
-			assertThat(obtainedAccountBalance).isEqualTo(expectedAccountBalance);
-			verify(repository, only()).getAccountBalance(clientID, sessionID);
+			assertThat(obtainedAccountStatement).isEqualTo(expectedAccountStatement);
+			verify(repository, only()).getAccountStatement(clientID, sessionID);
 		}
 
 		// Error handling
@@ -71,29 +71,29 @@ public class AccountBalanceServiceTest
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
-	// ----------------------------------------------------------- shouldNotReturnTheAccountBalanceBecauseExpiredSession
+	// --------------------------------------------------------- shouldNotReturnTheAccountStatementBecauseExpiredSession
 	/**
-	 * Doesn't get valid account balance (expired session).
+	 * Doesn't get valid account statement (expired session).
 	 */
 	// -----------------------------------------------------------------------------------------------------------------
 	@Test
-	public void shouldNotReturnTheAccountBalanceBecauseExpiredSession ()
+	public void shouldNotReturnTheAccountStatementBecauseExpiredSession ()
 	{
 		try
 		{
 			long clientID = 10;
 			String sessionID = "5dd35b40-2410-11e9-b56e-0800200c9a66";
 
-			AccountBalance balance = new AccountBalance();
-			AccountBalanceResp expectedAccountBalance = new AccountBalanceResp(balance,
-					AccountBalanceResp.Status.SESSION_EXPIRED);
+			AccountStatement statement = new AccountStatement();
+			AccountStatementResp expectedAccountStatement = new AccountStatementResp(statement,
+					AccountStatementResp.Status.SESSION_EXPIRED);
 
-			when(repository.getAccountBalance(clientID, sessionID)).thenReturn(expectedAccountBalance);
+			when(repository.getAccountStatement(clientID, sessionID)).thenReturn(expectedAccountStatement);
 
-			AccountBalanceResp obtainedAccountBalance = service.getAccountBalance(clientID, sessionID);
+			AccountStatementResp obtainedAccountStatement = service.getAccountStatement(clientID, sessionID);
 
-			assertThat(obtainedAccountBalance).isEqualTo(expectedAccountBalance);
-			verify(repository, only()).getAccountBalance(clientID, sessionID);
+			assertThat(obtainedAccountStatement).isEqualTo(expectedAccountStatement);
+			verify(repository, only()).getAccountStatement(clientID, sessionID);
 		}
 
 		// Error handling
@@ -109,29 +109,29 @@ public class AccountBalanceServiceTest
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
-	// ------------------------------------------------------ shouldNotReturnTheAccountBalanceBecauseSessionDoesNotExist
+	// ---------------------------------------------------- shouldNotReturnTheAccountStatementBecauseSessionDoesNotExist
 	/**
-	 * Doesn't get valid account balance (session doesn't exist).
+	 * Doesn't get valid account statement (session doesn't exist).
 	 */
 	// -----------------------------------------------------------------------------------------------------------------
 	@Test
-	public void shouldNotReturnTheAccountBalanceBecauseSessionDoesNotExist ()
+	public void shouldNotReturnTheAccountStatementBecauseSessionDoesNotExist ()
 	{
 		try
 		{
 			long clientID = 10;
 			String sessionID = "5dd35b40-2410-11e9-b56e-0800200c9a66";
 
-			AccountBalance balance = new AccountBalance();
-			AccountBalanceResp expectedAccountBalance = new AccountBalanceResp(balance,
-					AccountBalanceResp.Status.SESSION_DOES_NOT_EXISTS);
+			AccountStatement statement = new AccountStatement();
+			AccountStatementResp expectedAccountStatement = new AccountStatementResp(statement,
+					AccountStatementResp.Status.SESSION_DOES_NOT_EXISTS);
 
-			when(repository.getAccountBalance(clientID, sessionID)).thenReturn(expectedAccountBalance);
+			when(repository.getAccountStatement(clientID, sessionID)).thenReturn(expectedAccountStatement);
 
-			AccountBalanceResp obtainedAccountBalance = service.getAccountBalance(clientID, sessionID);
+			AccountStatementResp obtainedAccountStatement = service.getAccountStatement(clientID, sessionID);
 
-			assertThat(obtainedAccountBalance).isEqualTo(expectedAccountBalance);
-			verify(repository, only()).getAccountBalance(clientID, sessionID);
+			assertThat(obtainedAccountStatement).isEqualTo(expectedAccountStatement);
+			verify(repository, only()).getAccountStatement(clientID, sessionID);
 		}
 
 		// Error handling
@@ -147,32 +147,32 @@ public class AccountBalanceServiceTest
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
-	// -------------------------------------------------------------- shouldNotReturnTheAccountBalanceBecauseServerError
+	// ------------------------------------------------------------ shouldNotReturnTheAccountStatementBecauseServerError
 	/**
-	 * Doesn't get valid account balance (server error).
+	 * Doesn't get valid account statement (server error).
 	 */
 	// -----------------------------------------------------------------------------------------------------------------
 	@Test
-	public void shouldNotReturnTheAccountBalanceBecauseServerError ()
+	public void shouldNotReturnTheAccountStatementBecauseServerError ()
 	{
 		try
 		{
 			long clientID = 10;
 			String sessionID = "5dd35b40-2410-11e9-b56e-0800200c9a66";
 
-			when(repository.getAccountBalance(clientID, sessionID)).thenThrow(SimpleBankServiceException.class);
+			when(repository.getAccountStatement(clientID, sessionID)).thenThrow(SimpleBankServiceException.class);
 
 			try
 			{
-				service.getAccountBalance(clientID, sessionID);
+				service.getAccountStatement(clientID, sessionID);
 			}
 			catch (SimpleBankServiceException ex)
 			{
-				verify(repository, only()).getAccountBalance(clientID, sessionID);
+				verify(repository, only()).getAccountStatement(clientID, sessionID);
 				clearInvocations(repository);
 			}
 
-			verify(repository, times(0)).getAccountBalance(clientID, sessionID);
+			verify(repository, times(0)).getAccountStatement(clientID, sessionID);
 		}
 
 		// Error handling

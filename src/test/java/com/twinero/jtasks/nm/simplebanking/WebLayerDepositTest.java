@@ -43,14 +43,13 @@ public class WebLayerDepositTest
 	@MockBean
 	private SimpleBankService service;
 
-	// ----------------------------------------------------------------------------------------------------------------
-	// ------------------------------------------------------------------------------------------------ shouldDoDeposit
+	// -----------------------------------------------------------------------------------------------------------------
+	// ------------------------------------------------------------------------------------------------- shouldDoDeposit
 	/**
-	 * Performs a success deposit.
-	 * 
+	 * Performs a success depositReq.
 	 * @throws Exception Data Error.
 	 */
-	// ----------------------------------------------------------------------------------------------------------------
+	// -----------------------------------------------------------------------------------------------------------------
 	@Test
 	public void shouldDoDeposit ()
 		throws Exception
@@ -59,14 +58,14 @@ public class WebLayerDepositTest
 		Session session = new Session("5dd35b40-2410-11e9-b56e-0800200c9a66");
 		session.setClientID(clientID);
 		
-		Deposit depositForReq = new Deposit();
-		depositForReq.setClientID(session.getClientID());
-		DepositReq depositReq = new DepositReq(depositForReq, session.getSessionID());
+		Deposit deposit = new Deposit();
+		deposit.setClientID(session.getClientID());
+		DepositReq depositReq = new DepositReq(deposit, session.getSessionID());
 		
-		Deposit depositForResp = new Deposit(123);
-		DepositResp depositReps = new DepositResp(depositForResp, DepositResp.Status.OK);
+		Deposit expectedDeposit = new Deposit(123);
+		DepositResp expectedDepositResp = new DepositResp(expectedDeposit, DepositResp.Status.OK);
 		
-		when(service.doDeposit(depositForReq, session.getSessionID())).thenReturn((depositReps));
+		when(service.doDeposit(deposit, session.getSessionID())).thenReturn((expectedDepositResp));
 
 		this.mockMvc
 				.perform(post("/simpleBanking/deposits")
@@ -75,19 +74,19 @@ public class WebLayerDepositTest
 						.characterEncoding("UTF-8"))
 				.andDo(print())
 				.andExpect(status().isCreated())
-				.andExpect(content().string(containsString(Util.asJsonString(depositReps))))
+				.andExpect(content().string(containsString(Util.asJsonString(expectedDepositResp))))
 				.andExpect(content().contentType("application/json;charset=UTF-8"))
-				.andDo(document("deposits/deposit"))
+				.andDo(document("deposits/depositReq"))
 				.andReturn();
 	}
 
-	// ----------------------------------------------------------------------------------------------------------------
-	// --------------------------------------------------------------------------- shouldNotDepositBecauseInvalidClient
+	// -----------------------------------------------------------------------------------------------------------------
+	// ---------------------------------------------------------------------------- shouldNotDepositBecauseInvalidClient
 	/**
-	 * Performs a not valid deposit (invalid client).
+	 * Performs a not valid depositReq (invalid client).
 	 * @throws Exception Data error.
 	 */
-	// ----------------------------------------------------------------------------------------------------------------
+	// -----------------------------------------------------------------------------------------------------------------
 	@Test
 	public void shouldNotDepositBecauseInvalidClient ()
 		throws Exception
@@ -96,14 +95,14 @@ public class WebLayerDepositTest
 		Session session = new Session("5dd35b40-2410-11e9-b56e-0800200c9a66");
 		session.setClientID(clientID);
 		
-		Deposit depositForReq = new Deposit();
-		depositForReq.setClientID(session.getClientID());
-		DepositReq depositReq = new DepositReq(depositForReq, session.getSessionID());
+		Deposit deposit = new Deposit();
+		deposit.setClientID(session.getClientID());
+		DepositReq depositReq = new DepositReq(deposit, session.getSessionID());
 		
-		Deposit depositForResp = new Deposit();
-		DepositResp depositReps = new DepositResp(depositForResp, DepositResp.Status.INVALID_CLIENT);
+		Deposit expectedDeposit = new Deposit();
+		DepositResp expectedDepositResp = new DepositResp(expectedDeposit, DepositResp.Status.INVALID_CLIENT);
 		
-		when(service.doDeposit(depositForReq, session.getSessionID())).thenReturn((depositReps));
+		when(service.doDeposit(deposit, session.getSessionID())).thenReturn((expectedDepositResp));
 
 		this.mockMvc
 				.perform(post("/simpleBanking/deposits")
@@ -112,19 +111,19 @@ public class WebLayerDepositTest
 						.characterEncoding("UTF-8"))
 				.andDo(print())
 				.andExpect(status().isConflict())
-				.andExpect(content().string(containsString(Util.asJsonString(depositReps))))
+				.andExpect(content().string(containsString(Util.asJsonString(expectedDepositResp))))
 				.andExpect(content().contentType("application/json;charset=UTF-8"))
 				.andDo(document("deposits/ivalidDepositBecauseInvalidClient"))
 				.andReturn();
 	}
 	
-	// ----------------------------------------------------------------------------------------------------------------
-	// -------------------------------------------------------------------------- shouldNotDepositBecauseExpiredSession
+	// -----------------------------------------------------------------------------------------------------------------
+	// --------------------------------------------------------------------------- shouldNotDepositBecauseExpiredSession
 	/**
-	 * Performs a not valid deposit (expired session).
+	 * Performs a not valid depositReq (expired session).
 	 * @throws Exception Data error.
 	 */
-	// ----------------------------------------------------------------------------------------------------------------
+	// -----------------------------------------------------------------------------------------------------------------
 	@Test
 	public void shouldNotDepositBecauseExpiredSession ()
 		throws Exception
@@ -133,14 +132,14 @@ public class WebLayerDepositTest
 		Session session = new Session("5dd35b40-2410-11e9-b56e-0800200c9a66");
 		session.setClientID(clientID);
 		
-		Deposit depositForReq = new Deposit();
-		depositForReq.setClientID(session.getClientID());
-		DepositReq depositReq = new DepositReq(depositForReq, session.getSessionID());
+		Deposit deposit = new Deposit();
+		deposit.setClientID(session.getClientID());
+		DepositReq depositReq = new DepositReq(deposit, session.getSessionID());
 		
-		Deposit depositForResp = new Deposit();
-		DepositResp depositReps = new DepositResp(depositForResp, DepositResp.Status.SESSION_EXPIRED);
+		Deposit expectedDeposit = new Deposit();
+		DepositResp expectedDepositResp = new DepositResp(expectedDeposit, DepositResp.Status.SESSION_EXPIRED);
 		
-		when(service.doDeposit(depositForReq, session.getSessionID())).thenReturn((depositReps));
+		when(service.doDeposit(deposit, session.getSessionID())).thenReturn((expectedDepositResp));
 
 		this.mockMvc
 				.perform(post("/simpleBanking/deposits")
@@ -149,19 +148,19 @@ public class WebLayerDepositTest
 						.characterEncoding("UTF-8"))
 				.andDo(print())
 				.andExpect(status().isUnauthorized())
-				.andExpect(content().string(containsString(Util.asJsonString(depositReps))))
+				.andExpect(content().string(containsString(Util.asJsonString(expectedDepositResp))))
 				.andExpect(content().contentType("application/json;charset=UTF-8"))
 				.andDo(document("deposits/expiredSession"))
 				.andReturn();
 	}
 	
-	// ----------------------------------------------------------------------------------------------------------------
-	// -------------------------------------------------------------------------- shouldNotDepositBecauseInvalidSession
+	// -----------------------------------------------------------------------------------------------------------------
+	// --------------------------------------------------------------------------- shouldNotDepositBecauseInvalidSession
 	/**
-	 * Performs a not valid deposit (invalid session - does not exist).
+	 * Performs a not valid depositReq (invalid session - does not exist).
 	 * @throws Exception Data error.
 	 */
-	// ----------------------------------------------------------------------------------------------------------------
+	// -----------------------------------------------------------------------------------------------------------------
 	@Test
 	public void shouldNotDepositBecauseInvalidSession ()
 		throws Exception
@@ -170,14 +169,14 @@ public class WebLayerDepositTest
 		Session session = new Session("5dd35b40-2410-11e9-b56e-0800200c9a66");
 		session.setClientID(clientID);
 		
-		Deposit depositForReq = new Deposit();
-		depositForReq.setClientID(session.getClientID());
-		DepositReq depositReq = new DepositReq(depositForReq, session.getSessionID());
+		Deposit deposit = new Deposit();
+		deposit.setClientID(session.getClientID());
+		DepositReq depositReq = new DepositReq(deposit, session.getSessionID());
 		
-		Deposit depositForResp = new Deposit();
-		DepositResp depositReps = new DepositResp(depositForResp, DepositResp.Status.SESSION_DOES_NOT_EXISTS);
+		Deposit expectedDeposit = new Deposit();
+		DepositResp expectedDepositResp = new DepositResp(expectedDeposit, DepositResp.Status.SESSION_DOES_NOT_EXISTS);
 		
-		when(service.doDeposit(depositForReq, session.getSessionID())).thenReturn((depositReps));
+		when(service.doDeposit(deposit, session.getSessionID())).thenReturn((expectedDepositResp));
 
 		this.mockMvc
 				.perform(post("/simpleBanking/deposits")
@@ -186,19 +185,19 @@ public class WebLayerDepositTest
 						.characterEncoding("UTF-8"))
 				.andDo(print())
 				.andExpect(status().isUnauthorized())
-				.andExpect(content().string(containsString(Util.asJsonString(depositReps))))
+				.andExpect(content().string(containsString(Util.asJsonString(expectedDepositResp))))
 				.andExpect(content().contentType("application/json;charset=UTF-8"))
 				.andDo(document("deposits/sessionDoesNotExist"))
 				.andReturn();
 	}
 	
-	// ----------------------------------------------------------------------------------------------------------------
-	// ----------------------------------------------------------------------------- shouldNotDepositBecauseServerError
+	// -----------------------------------------------------------------------------------------------------------------
+	// ------------------------------------------------------------------------------ shouldNotDepositBecauseServerError
 	/**
-	 * Performs a not valid deposit (server error).
+	 * Performs a not valid depositReq (server error).
 	 * @throws Exception Data error.
 	 */
-	// ----------------------------------------------------------------------------------------------------------------
+	// -----------------------------------------------------------------------------------------------------------------
 	@Test
 	public void shouldNotDepositBecauseServerError ()
 		throws Exception
@@ -207,14 +206,14 @@ public class WebLayerDepositTest
 		Session session = new Session("5dd35b40-2410-11e9-b56e-0800200c9a66");
 		session.setClientID(clientID);
 		
-		Deposit depositForReq = new Deposit();
-		depositForReq.setClientID(session.getClientID());
-		DepositReq depositReq = new DepositReq(depositForReq, session.getSessionID());
+		Deposit deposit = new Deposit();
+		deposit.setClientID(session.getClientID());
+		DepositReq depositReq = new DepositReq(deposit, session.getSessionID());
 		
-		Deposit depositForResp = new Deposit();
-		DepositResp depositReps = new DepositResp(depositForResp, DepositResp.Status.SERVER_ERROR);
+		Deposit expectedDeposit = new Deposit();
+		DepositResp expectedDepositResp = new DepositResp(expectedDeposit, DepositResp.Status.SERVER_ERROR);
 		
-		when(service.doDeposit(depositForReq, session.getSessionID())).thenThrow(SimpleBankServiceException.class);
+		when(service.doDeposit(deposit, session.getSessionID())).thenThrow(SimpleBankServiceException.class);
 
 		this.mockMvc
 				.perform(post("/simpleBanking/deposits")
@@ -223,10 +222,9 @@ public class WebLayerDepositTest
 						.characterEncoding("UTF-8"))
 				.andDo(print())
 				.andExpect(status().is5xxServerError())
-				.andExpect(content().string(containsString(Util.asJsonString(depositReps))))
+				.andExpect(content().string(containsString(Util.asJsonString(expectedDepositResp))))
 				.andExpect(content().contentType("application/json;charset=UTF-8"))
 				.andDo(document("deposits/serverError"))
 				.andReturn();
 	}
 }
-

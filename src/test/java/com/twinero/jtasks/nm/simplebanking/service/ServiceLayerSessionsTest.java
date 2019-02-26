@@ -23,7 +23,7 @@ import com.twinero.jtasks.nm.simplebanking.repository.SimpleBankRepository;
 
 @SpringBootTest
 @RunWith(SpringJUnit4ClassRunner.class)
-public class SessionsServiceTest
+public class ServiceLayerSessionsTest
 {
 	@Autowired
 	private SimpleBankService service;

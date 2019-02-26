@@ -111,8 +111,7 @@ public class SimpleBankServiceImpl implements SimpleBankService
 											String sessionID )
 		throws SimpleBankServiceException
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return repository.doDeposit (deposit, sessionID);
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -122,11 +121,10 @@ public class SimpleBankServiceImpl implements SimpleBankService
 	 */
 	// -----------------------------------------------------------------------------------------------------------------
 	@Override
-	public WithdrawResp doWithdraw (	Withdraw depositForReq,
+	public WithdrawResp doWithdraw (	Withdraw withdraw,
 												String sessionID )
 		throws SimpleBankServiceException
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return repository.doWithdraw (withdraw, sessionID);
 	}
 }
