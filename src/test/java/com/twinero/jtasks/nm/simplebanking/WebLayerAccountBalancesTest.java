@@ -21,6 +21,8 @@ import com.twinero.jtasks.nm.simplebanking.utils.Util;
 import com.twinero.jtasks.nm.simplebanking.web.SimpleBankingController;
 
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.mockito.Mockito.only;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
@@ -40,14 +42,13 @@ public class WebLayerAccountBalancesTest
 	@MockBean
 	private SimpleBankService service;
 
-	// ----------------------------------------------------------------------------------------------------------------
-	// ----------------------------------------------------------------------------------- shouldReturnAnAccountBalance
+	// -----------------------------------------------------------------------------------------------------------------
+	// ------------------------------------------------------------------------------------ shouldReturnAnAccountBalance
 	/**
 	 * Gets the account balance.
-	 * 
 	 * @throws Exception Data Error.
 	 */
-	// ----------------------------------------------------------------------------------------------------------------
+	// -----------------------------------------------------------------------------------------------------------------
 	@Test
 	public void shouldReturnAnAccountBalance ()
 		throws Exception
@@ -71,16 +72,17 @@ public class WebLayerAccountBalancesTest
 				.andExpect(content().contentType("application/json;charset=UTF-8"))
 				.andDo(document("accountBalances/accountBalance"))
 				.andReturn();
+		
+		verify(service, only()).getAccountBalance(session.getClientID(), session.getSessionID());
 	}
 
-	// ----------------------------------------------------------------------------------------------------------------
-	// ----------------------------------------------------- shouldNotReturnTheAccountBalanceBecauseSessionDoesNotExist
+	// -----------------------------------------------------------------------------------------------------------------
+	// ------------------------------------------------------ shouldNotReturnTheAccountBalanceBecauseSessionDoesNotExist
 	/**
 	 * Tries to get the account balance, but the session is expired.
-	 * 
 	 * @throws Exception Data Error.
 	 */
-	// ----------------------------------------------------------------------------------------------------------------
+	// -----------------------------------------------------------------------------------------------------------------
 	@Test
 	public void shouldNotReturnTheAccountBalanceBecauseExpiredSession ()
 		throws Exception
@@ -105,16 +107,17 @@ public class WebLayerAccountBalancesTest
 				.andExpect(content().contentType("application/json;charset=UTF-8"))
 				.andDo(document("accountBalances/expiredSession"))
 				.andReturn();
+		
+		verify(service, only()).getAccountBalance(session.getClientID(), session.getSessionID());
 	}
 
-	// ----------------------------------------------------------------------------------------------------------------
-	// ----------------------------------------------------- shouldNotReturnTheAccountBalanceBecauseSessionDoesNotExist
+	// -----------------------------------------------------------------------------------------------------------------
+	// ------------------------------------------------------ shouldNotReturnTheAccountBalanceBecauseSessionDoesNotExist
 	/**
 	 * Tries to get the account balance, but the session doesn't exist.
-	 * 
 	 * @throws Exception Data Error.
 	 */
-	// ----------------------------------------------------------------------------------------------------------------
+	// -----------------------------------------------------------------------------------------------------------------
 	@Test
 	public void shouldNotReturnTheAccountBalanceBecauseSessionDoesNotExist ()
 		throws Exception
@@ -139,15 +142,17 @@ public class WebLayerAccountBalancesTest
 				.andExpect(content().contentType("application/json;charset=UTF-8"))
 				.andDo(document("accountBalances/sessionDoesNotExist"))
 				.andReturn();
+		
+		verify(service, only()).getAccountBalance(session.getClientID(), session.getSessionID());
 	}
 
-	// ----------------------------------------------------------------------------------------------------------------
-	// ------------------------------------------------------------- shouldNotReturnTheAccountBalanceBecauseServerError
+	// -----------------------------------------------------------------------------------------------------------------
+	// -------------------------------------------------------------- shouldNotReturnTheAccountBalanceBecauseServerError
 	/**
 	 * Tries to get the account balance, but a server error occurs.
 	 * @throws Exception Data Error.
 	 */
-	// ----------------------------------------------------------------------------------------------------------------
+	// -----------------------------------------------------------------------------------------------------------------
 	@Test
 	public void shouldNotReturnTheAccountBalanceBecauseServerError ()
 		throws Exception
@@ -173,5 +178,7 @@ public class WebLayerAccountBalancesTest
 				.andExpect(content().contentType("application/json;charset=UTF-8"))
 				.andDo(document("accountBalances/notAccountBalanceServerError"))
 				.andReturn();
+		
+		verify(service, only()).getAccountBalance(session.getClientID(), session.getSessionID());
 	}
 }

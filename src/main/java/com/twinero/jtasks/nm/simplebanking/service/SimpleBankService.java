@@ -24,19 +24,24 @@ public interface SimpleBankService
 	 * @param sign The signing data.
 	 * 
 	 * @return Object with the response data.
-	 * @throws SimpleBankServiceException Object indicating an service error.
+	 * @throws SimpleBankServiceException Object indicating a service error.
 	 */
 	// -----------------------------------------------------------------------------------------------------------------
 	public SignupResp signup (Sign sign )
 		throws SimpleBankServiceException;
 
 	// -----------------------------------------------------------------------------------------------------------------
-	// ---------------------------------------------------------------------------------------------------------- login
+	// ----------------------------------------------------------------------------------------------------------- login
 	/**
-	 * {@inheritDoc}
+	 * Performs a login in the system.
+	 * 
+	 * @param sign The login data.
+	 * 
+	 * @return Object with the response data.
+	 * @throws SimpleBankServiceException Object indicating a service error.
 	 */
 	// -----------------------------------------------------------------------------------------------------------------
-	public Session login (Sign newSign )
+	public Session login (Sign sign )
 		throws SimpleBankServiceException;
 
 	// -----------------------------------------------------------------------------------------------------------------

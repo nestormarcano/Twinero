@@ -14,13 +14,14 @@ import com.twinero.jtasks.nm.simplebanking.beans.Withdraw;
 import com.twinero.jtasks.nm.simplebanking.beans.WithdrawResp;
 import com.twinero.jtasks.nm.simplebanking.exception.SimpleBankServiceException;
 import com.twinero.jtasks.nm.simplebanking.repository.SimpleBankRepository;
+import com.twinero.jtasks.nm.simplebanking.utils.Util;
 
 @Service
 public class SimpleBankServiceImpl implements SimpleBankService
 {
 	@Autowired
 	private SimpleBankRepository repository;
-	
+
 	// -----------------------------------------------------------------------------------------------------------------
 	// ------------------------------------------------------------------------------------------- SimpleBankServiceImpl
 	/**
@@ -28,11 +29,11 @@ public class SimpleBankServiceImpl implements SimpleBankService
 	 * @param theRepository The repository.
 	 */
 	// -----------------------------------------------------------------------------------------------------------------
-	public SimpleBankServiceImpl(SimpleBankRepository repository)
+	public SimpleBankServiceImpl ( SimpleBankRepository repository )
 	{
 		this.repository = repository;
 	}
-	
+
 	// -----------------------------------------------------------------------------------------------------------------
 	// ---------------------------------------------------------------------------------------------------------- signup
 	/**
@@ -43,10 +44,12 @@ public class SimpleBankServiceImpl implements SimpleBankService
 	public SignupResp signup (Sign sign )
 		throws SimpleBankServiceException
 	{
-		if (sign.getEmail() == null || sign.getEmail().isEmpty()
+		if (sign.getEmail() == null || !Util.checksEmailFormat(sign.getEmail())
 				|| sign.getPassword() == null || sign.getPassword().isEmpty())
-		{ throw new SimpleBankServiceException(); }
-		
+		{
+			throw new SimpleBankServiceException();
+		}
+
 		return repository.signup(sign);
 	}
 
@@ -57,11 +60,16 @@ public class SimpleBankServiceImpl implements SimpleBankService
 	 */
 	// -----------------------------------------------------------------------------------------------------------------
 	@Override
-	public Session login (Sign newSign )
+	public Session login (Sign sign )
 		throws SimpleBankServiceException
 	{
-		// TODO Auto-generated method stub
-		return null;
+		if (sign.getEmail() == null || !Util.checksEmailFormat(sign.getEmail())
+				|| sign.getPassword() == null || sign.getPassword().isEmpty())
+		{
+			throw new SimpleBankServiceException();
+		}
+		
+		return repository.login(sign);
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -75,8 +83,7 @@ public class SimpleBankServiceImpl implements SimpleBankService
 																String sessionID )
 		throws SimpleBankServiceException
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return repository.getAccountBalance(clientID, sessionID);
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -90,8 +97,7 @@ public class SimpleBankServiceImpl implements SimpleBankService
 																		String sessionID )
 		throws SimpleBankServiceException
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return repository.getAccountStatement(clientID, sessionID);
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------

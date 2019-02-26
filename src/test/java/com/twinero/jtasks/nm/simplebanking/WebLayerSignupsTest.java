@@ -22,6 +22,8 @@ import com.twinero.jtasks.nm.simplebanking.utils.Util;
 import com.twinero.jtasks.nm.simplebanking.web.SimpleBankingController;
 
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.mockito.Mockito.only;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -73,6 +75,8 @@ public class WebLayerSignupsTest
 				.andExpect(content().contentType("application/json;charset=UTF-8"))
 				.andDo(document("signups/signup"))
 				.andReturn();
+		
+		verify(service, only()).signup(sign);
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -104,6 +108,8 @@ public class WebLayerSignupsTest
 				.andExpect(content().contentType("application/json;charset=UTF-8"))
 				.andDo(document("signups/notSignup"))
 				.andReturn();
+		
+		verify(service, only()).signup(sign);
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -136,6 +142,8 @@ public class WebLayerSignupsTest
 				.andExpect(content().contentType("application/json;charset=UTF-8"))
 				.andDo(document("signups/notSignupMalformedEmail"))
 				.andReturn();
+		
+		verify(service, times(0)).signup(sign);
 	}
 	
 	// -----------------------------------------------------------------------------------------------------------------
@@ -168,5 +176,7 @@ public class WebLayerSignupsTest
 				.andExpect(content().contentType("application/json;charset=UTF-8"))
 				.andDo(document("signups/notSignupServerError"))
 				.andReturn();
+		
+		verify(service, only()).signup(sign);
 	}
 }

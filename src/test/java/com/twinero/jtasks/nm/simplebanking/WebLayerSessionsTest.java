@@ -22,6 +22,9 @@ import com.twinero.jtasks.nm.simplebanking.utils.Util;
 import com.twinero.jtasks.nm.simplebanking.web.SimpleBankingController;
 
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.mockito.Mockito.only;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
@@ -41,14 +44,14 @@ public class WebLayerSessionsTest
 	@MockBean
 	private SimpleBankService service;
 
-	// ----------------------------------------------------------------------------------------------------------------
-	// ----------------------------------------------------------------------------------- shouldLoginAndReturnASession
+	// -----------------------------------------------------------------------------------------------------------------
+	// ------------------------------------------------------------------------------------ shouldLoginAndReturnASession
 	/**
 	 * Performs a login and return a valid session.
 	 * 
 	 * @throws Exception Data Error.
 	 */
-	// ----------------------------------------------------------------------------------------------------------------
+	// -----------------------------------------------------------------------------------------------------------------
 	@Test
 	public void shouldLoginAndReturnASession ()
 		throws Exception
@@ -58,10 +61,11 @@ public class WebLayerSessionsTest
 		Sign sign = new Sign(email, password);
 
 		long clientID = 10;
-		Session session = new Session("5dd35b40-2410-11e9-b56e-0800200c9a66");
-		session.setClientID(clientID);
+		Session expectedSession = new Session("5dd35b40-2410-11e9-b56e-0800200c9a66");
+		expectedSession.setClientID(clientID);
+		expectedSession.setSessionStatus(Session.Status.OK);
 		
-		when(service.login(sign)).thenReturn(session);
+		when(service.login(sign)).thenReturn(expectedSession);
 
 		this.mockMvc
 				.perform(post("/simpleBanking/sessions")
@@ -70,20 +74,22 @@ public class WebLayerSessionsTest
 						.characterEncoding("UTF-8"))
 				.andDo(print())
 				.andExpect(status().isCreated())
-				.andExpect(content().string(containsString(Util.asJsonString(session))))
+				.andExpect(content().string(containsString(Util.asJsonString(expectedSession))))
 				.andExpect(content().contentType("application/json;charset=UTF-8"))
 				.andDo(document("sessions/login"))
 				.andReturn();
+		
+		verify(service, only()).login(sign);
 	}
 
-	// ----------------------------------------------------------------------------------------------------------------
-	// ------------------------------------------------------------------------------------------------- shouldNotLogin
+	// -----------------------------------------------------------------------------------------------------------------
+	// -------------------------------------------------------------------------------------------------- shouldNotLogin
 	/**
 	 * Performs a not valid login.
 	 * 
 	 * @throws Exception Data error.
 	 */
-	// ----------------------------------------------------------------------------------------------------------------
+	// -----------------------------------------------------------------------------------------------------------------
 	@Test
 	public void shouldNotLogin ()
 		throws Exception
@@ -91,9 +97,11 @@ public class WebLayerSessionsTest
 		String email = "pedro.marcano@gmail.com";
 		String password = "123456";
 		Sign sign = new Sign(email, password);
-
-		Session session = new Session();
-		when(service.login(sign)).thenReturn(session);
+		
+		Session expectedSession = new Session();
+		expectedSession.setSessionStatus(Session.Status.UNAUTHORIZED);
+		
+		when(service.login(sign)).thenReturn(expectedSession);
 
 		this.mockMvc
 				.perform(post("/simpleBanking/sessions")
@@ -102,30 +110,31 @@ public class WebLayerSessionsTest
 						.characterEncoding("UTF-8"))
 				.andDo(print())
 				.andExpect(status().isUnauthorized())
-				.andExpect(content().string(containsString(Util.asJsonString(session))))
+				.andExpect(content().string(containsString(Util.asJsonString(expectedSession))))
 				.andExpect(content().contentType("application/json;charset=UTF-8"))
 				.andDo(document("sessions/notLogin"))
 				.andReturn();
+		
+		verify(service, only()).login(sign);
 	}
 
-	// ----------------------------------------------------------------------------------------------------------------
-	// ---------------------------------------------------------------------------- shouldNotLoginBecauseMalformedEmail
+	// -----------------------------------------------------------------------------------------------------------------
+	// ----------------------------------------------------------------------------- shouldNotLoginBecauseMalformedEmail
 	/**
 	 * Performs a not valid login because malformed email.
 	 * 
 	 * @throws Exception Data error.
 	 */
-	// ----------------------------------------------------------------------------------------------------------------
+	// -----------------------------------------------------------------------------------------------------------------
 	@Test
 	public void shouldNotLoginBecauseMalformedEmail ()
 		throws Exception
 	{
 		String email = "nestor marcano gmail.com";
 		String password = "123 456";
+		
 		Sign sign = new Sign(email, password);
-
-		Session session = new Session();
-		when(service.login(sign)).thenReturn(session);
+		Session expectedSession = new Session();
 
 		this.mockMvc
 				.perform(post("/simpleBanking/sessions")
@@ -134,10 +143,12 @@ public class WebLayerSessionsTest
 						.characterEncoding("UTF-8"))
 				.andDo(print())
 				.andExpect(status().isBadRequest())
-				.andExpect(content().string(containsString(Util.asJsonString(session))))
+				.andExpect(content().string(containsString(Util.asJsonString(expectedSession))))
 				.andExpect(content().contentType("application/json;charset=UTF-8"))
 				.andDo(document("sessions/notLoginMalformedEmail"))
 				.andReturn();
+		
+		verify(service, times(0)).login(sign);
 	}
 	
 	// -----------------------------------------------------------------------------------------------------------------
@@ -153,9 +164,10 @@ public class WebLayerSessionsTest
 	{
 		String email = "nestor.marcano@gmail.com";
 		String password = "123456";
+		
 		Sign sign = new Sign(email, password);
-
-		Session session = new Session();
+		Session expectedSession = new Session();
+		
 		when(service.login(sign)).thenThrow(SimpleBankServiceException.class);
 
 		this.mockMvc
@@ -165,9 +177,11 @@ public class WebLayerSessionsTest
 						.characterEncoding("UTF-8"))
 				.andDo(print())
 				.andExpect(status().is5xxServerError())
-				.andExpect(content().string(containsString(Util.asJsonString(session))))
+				.andExpect(content().string(containsString(Util.asJsonString(expectedSession))))
 				.andExpect(content().contentType("application/json;charset=UTF-8"))
 				.andDo(document("sessions/notLoginServerError"))
 				.andReturn();
+		
+		verify(service, only()).login(sign);
 	}
 }
