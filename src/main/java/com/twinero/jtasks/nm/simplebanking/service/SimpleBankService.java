@@ -2,16 +2,16 @@ package com.twinero.jtasks.nm.simplebanking.service;
 
 import org.springframework.stereotype.Service;
 
-import com.twinero.jtasks.nm.simplebanking.beans.AccountBalanceResp;
-import com.twinero.jtasks.nm.simplebanking.beans.AccountStatementResp;
-import com.twinero.jtasks.nm.simplebanking.beans.Deposit;
-import com.twinero.jtasks.nm.simplebanking.beans.DepositResp;
-import com.twinero.jtasks.nm.simplebanking.beans.Session;
-import com.twinero.jtasks.nm.simplebanking.beans.Sign;
-import com.twinero.jtasks.nm.simplebanking.beans.SignupResp;
-import com.twinero.jtasks.nm.simplebanking.beans.Withdraw;
-import com.twinero.jtasks.nm.simplebanking.beans.WithdrawResp;
-import com.twinero.jtasks.nm.simplebanking.exception.SimpleBankServiceException;
+import com.twinero.jtasks.nm.simplebanking.repository.beans.AccountBalanceResp;
+import com.twinero.jtasks.nm.simplebanking.repository.beans.AccountStatementResp;
+import com.twinero.jtasks.nm.simplebanking.repository.beans.Deposit;
+import com.twinero.jtasks.nm.simplebanking.repository.beans.DepositResp;
+import com.twinero.jtasks.nm.simplebanking.repository.beans.Session;
+import com.twinero.jtasks.nm.simplebanking.repository.beans.Sign;
+import com.twinero.jtasks.nm.simplebanking.repository.beans.SignupResp;
+import com.twinero.jtasks.nm.simplebanking.repository.beans.Withdraw;
+import com.twinero.jtasks.nm.simplebanking.repository.beans.WithdrawResp;
+import com.twinero.jtasks.nm.simplebanking.repository.exception.SimpleBankServiceException;
 
 @Service
 public interface SimpleBankService

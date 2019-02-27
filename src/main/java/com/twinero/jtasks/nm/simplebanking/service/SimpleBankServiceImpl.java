@@ -3,38 +3,74 @@ package com.twinero.jtasks.nm.simplebanking.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.twinero.jtasks.nm.simplebanking.beans.AccountBalance;
-import com.twinero.jtasks.nm.simplebanking.beans.AccountBalanceResp;
-import com.twinero.jtasks.nm.simplebanking.beans.AccountStatement;
-import com.twinero.jtasks.nm.simplebanking.beans.AccountStatementResp;
-import com.twinero.jtasks.nm.simplebanking.beans.Deposit;
-import com.twinero.jtasks.nm.simplebanking.beans.DepositResp;
-import com.twinero.jtasks.nm.simplebanking.beans.Session;
-import com.twinero.jtasks.nm.simplebanking.beans.Sign;
-import com.twinero.jtasks.nm.simplebanking.beans.SignupResp;
-import com.twinero.jtasks.nm.simplebanking.beans.Withdraw;
-import com.twinero.jtasks.nm.simplebanking.beans.WithdrawResp;
-import com.twinero.jtasks.nm.simplebanking.exception.SimpleBankServiceException;
-import com.twinero.jtasks.nm.simplebanking.repository.SimpleBankRepository;
+import com.twinero.jtasks.nm.simplebanking.repository.AccountBalancesRepository;
+import com.twinero.jtasks.nm.simplebanking.repository.AccountStatementsRepository;
+import com.twinero.jtasks.nm.simplebanking.repository.DepositsRepository;
+import com.twinero.jtasks.nm.simplebanking.repository.SessionsRepository;
+import com.twinero.jtasks.nm.simplebanking.repository.SignupsRepository;
+import com.twinero.jtasks.nm.simplebanking.repository.WithdrawsRepository;
+import com.twinero.jtasks.nm.simplebanking.repository.beans.AccountBalance;
+import com.twinero.jtasks.nm.simplebanking.repository.beans.AccountBalanceResp;
+import com.twinero.jtasks.nm.simplebanking.repository.beans.AccountStatement;
+import com.twinero.jtasks.nm.simplebanking.repository.beans.AccountStatementResp;
+import com.twinero.jtasks.nm.simplebanking.repository.beans.Deposit;
+import com.twinero.jtasks.nm.simplebanking.repository.beans.DepositResp;
 import com.twinero.jtasks.nm.simplebanking.repository.beans.SesionStatus;
+import com.twinero.jtasks.nm.simplebanking.repository.beans.Session;
+import com.twinero.jtasks.nm.simplebanking.repository.beans.Sign;
+import com.twinero.jtasks.nm.simplebanking.repository.beans.SignupResp;
+import com.twinero.jtasks.nm.simplebanking.repository.beans.Withdraw;
+import com.twinero.jtasks.nm.simplebanking.repository.beans.WithdrawResp;
+import com.twinero.jtasks.nm.simplebanking.repository.exception.SimpleBankServiceException;
 import com.twinero.jtasks.nm.simplebanking.utils.Util;
 
 @Service
 public class SimpleBankServiceImpl implements SimpleBankService
-{
+{	
 	@Autowired
-	private SimpleBankRepository repository;
+	private SignupsRepository signupsRepository;
+	
+	@Autowired
+	private SessionsRepository sessionsRepository;
+	
+	@Autowired
+	private AccountBalancesRepository accountBalancesRepository;
+	
+	@Autowired
+	private AccountStatementsRepository accountStatementsRepository;
+	
+	@Autowired
+	private DepositsRepository depositsRepository;
+	
+	@Autowired
+	private WithdrawsRepository withdrawsRepository;
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// ------------------------------------------------------------------------------------------- SimpleBankServiceImpl
 	/**
 	 * Constructor with the repository.
-	 * @param repository The repository.
+	 * 
+	 * @param theSignupsRepository The sign-ups repository.
+	 * @param theSessionsRepository The sessions repository.
+	 * @param theAccountBalancesRepository The account balances repository.
+	 * @param theAccountStatementsRepository The statements repository.
+	 * @param theDepositsRepository The Deposits repository.
+	 * @param theWithdrawsRepository The Withdraws repository.
 	 */
 	// -----------------------------------------------------------------------------------------------------------------
-	public SimpleBankServiceImpl ( SimpleBankRepository repository )
+	public SimpleBankServiceImpl ( SignupsRepository theSignupsRepository,
+	                               SessionsRepository theSessionsRepository,
+	                               AccountBalancesRepository theAccountBalancesRepository,
+	                               AccountStatementsRepository theAccountStatementsRepository,
+	                               DepositsRepository theDepositsRepository,
+	                               WithdrawsRepository theWithdrawsRepository)
 	{
-		this.repository = repository;
+		this.signupsRepository = theSignupsRepository;
+		this.sessionsRepository = theSessionsRepository;
+		this.accountBalancesRepository = theAccountBalancesRepository;
+		this.accountStatementsRepository = theAccountStatementsRepository;
+		this.depositsRepository = theDepositsRepository;
+		this.withdrawsRepository = theWithdrawsRepository;
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -51,7 +87,7 @@ public class SimpleBankServiceImpl implements SimpleBankService
 				|| sign.getPassword() == null || sign.getPassword().isEmpty())
 		{ throw new SimpleBankServiceException(); }
 
-		return repository.signup(sign);
+		return signupsRepository.add(sign);
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -68,7 +104,7 @@ public class SimpleBankServiceImpl implements SimpleBankService
 				|| sign.getPassword() == null || sign.getPassword().isEmpty())
 		{ throw new SimpleBankServiceException(); }
 
-		return repository.login(sign);
+		return sessionsRepository.add(sign);
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -82,11 +118,11 @@ public class SimpleBankServiceImpl implements SimpleBankService
 																String sessionID )
 		throws SimpleBankServiceException
 	{
-		SesionStatus estatus = repository.verifySession(sessionID);
+		SesionStatus estatus = sessionsRepository.get(sessionID);
 		switch (estatus)
 		{
 			case OK:
-				return repository.getAccountBalance(clientID);
+				return accountBalancesRepository.get(clientID);
 
 			case EXPIRED:
 				return new AccountBalanceResp(new AccountBalance(), AccountBalanceResp.Status.SESSION_EXPIRED);
@@ -113,11 +149,11 @@ public class SimpleBankServiceImpl implements SimpleBankService
 																		String sessionID )
 		throws SimpleBankServiceException
 	{
-		SesionStatus estatus = repository.verifySession(sessionID);
+		SesionStatus estatus = sessionsRepository.get(sessionID);
 		switch (estatus)
 		{
 			case OK:
-				return repository.getAccountStatement(clientID);
+				return accountStatementsRepository.get(clientID);
 
 			case EXPIRED:
 				return new AccountStatementResp(new AccountStatement(), AccountStatementResp.Status.SESSION_EXPIRED);
@@ -144,11 +180,11 @@ public class SimpleBankServiceImpl implements SimpleBankService
 											String sessionID )
 		throws SimpleBankServiceException
 	{
-		SesionStatus estatus = repository.verifySession(sessionID);
+		SesionStatus estatus = sessionsRepository.get(sessionID);
 		switch (estatus)
 		{
 			case OK:
-				return repository.doDeposit(deposit);
+				return depositsRepository.add(deposit);
 
 			case EXPIRED:
 				return new DepositResp(new Deposit(), DepositResp.Status.SESSION_EXPIRED);
@@ -175,11 +211,11 @@ public class SimpleBankServiceImpl implements SimpleBankService
 												String sessionID )
 		throws SimpleBankServiceException
 	{
-		SesionStatus estatus = repository.verifySession(sessionID);
+		SesionStatus estatus = sessionsRepository.get(sessionID);
 		switch (estatus)
 		{
 			case OK:
-				return repository.doWithdraw(withdraw);
+				return withdrawsRepository.add(withdraw);
 
 			case EXPIRED:
 				return new WithdrawResp(new Withdraw(), WithdrawResp.Status.SESSION_EXPIRED);

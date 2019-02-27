@@ -16,10 +16,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.twinero.jtasks.nm.simplebanking.beans.Session;
-import com.twinero.jtasks.nm.simplebanking.beans.Sign;
-import com.twinero.jtasks.nm.simplebanking.exception.SimpleBankServiceException;
-import com.twinero.jtasks.nm.simplebanking.repository.SimpleBankRepository;
+import com.twinero.jtasks.nm.simplebanking.repository.SessionsRepository;
+import com.twinero.jtasks.nm.simplebanking.repository.beans.Session;
+import com.twinero.jtasks.nm.simplebanking.repository.beans.Sign;
+import com.twinero.jtasks.nm.simplebanking.repository.exception.SimpleBankServiceException;
 import com.twinero.jtasks.nm.simplebanking.service.SimpleBankService;
 
 @SpringBootTest
@@ -31,8 +31,8 @@ public class ServiceLayerSessionsTest
 
 	@Autowired
 	@MockBean
-	private SimpleBankRepository repository;
-
+	private SessionsRepository sessionsRepository;
+	
 	// -----------------------------------------------------------------------------------------------------------------
 	// ------------------------------------------------------------------------------------------ shouldLoginAndReturnOK
 	/**
@@ -52,12 +52,12 @@ public class ServiceLayerSessionsTest
 			Session expectedSession = new Session("5dd35b40-2410-11e9-b56e-0800200c9a66");
 			expectedSession.setClientID(clientID);
 
-			when(repository.login(sign)).thenReturn(expectedSession);
+			when(sessionsRepository.add(sign)).thenReturn(expectedSession);
 
 			Session obtainedSession = service.login(sign);
 
 			assertThat(obtainedSession).isEqualTo(expectedSession);
-			verify(repository, only()).login(sign);
+			verify(sessionsRepository, only()).add(sign);
 		}
 
 		// Error handling
@@ -90,12 +90,12 @@ public class ServiceLayerSessionsTest
 			Session expectedSession = new Session();
 			expectedSession.setSessionStatus(Session.Status.UNAUTHORIZED);
 
-			when(repository.login(sign)).thenReturn(expectedSession);
+			when(sessionsRepository.add(sign)).thenReturn(expectedSession);
 
 			Session obtainedSession = service.login(sign);
 
 			assertThat(obtainedSession).isEqualTo(expectedSession);
-			verify(repository, only()).login(sign);
+			verify(sessionsRepository, only()).add(sign);
 		}
 
 		// Error handling
@@ -128,10 +128,10 @@ public class ServiceLayerSessionsTest
 			}
 			catch (SimpleBankServiceException ex)
 			{
-				verify(repository, times(0)).login(sign);
+				verify(sessionsRepository, times(0)).add(sign);
 			}
 
-			verify(repository, times(0)).login(sign);
+			verify(sessionsRepository, times(0)).add(sign);
 		}
 
 		// Error handling
@@ -158,7 +158,6 @@ public class ServiceLayerSessionsTest
 		try
 		{
 			Sign sign = new Sign("nestor marcano gmail.com", "123456");
-			when(repository.signup(sign)).thenThrow(SimpleBankServiceException.class);
 
 			try
 			{
@@ -166,10 +165,10 @@ public class ServiceLayerSessionsTest
 			}
 			catch (SimpleBankServiceException ex)
 			{
-				verify(repository, times(0)).login(sign);
+				verify(sessionsRepository, times(0)).add(sign);
 			}
 
-			verify(repository, times(0)).login(sign);
+			verify(sessionsRepository, times(0)).add(sign);
 		}
 
 		// Error handling
@@ -197,7 +196,7 @@ public class ServiceLayerSessionsTest
 		{
 			Sign sign = new Sign("nestor.marcano@gmail.com", "123456");
 
-			when(repository.login(sign)).thenThrow(SimpleBankServiceException.class);
+			when(sessionsRepository.add(sign)).thenThrow(SimpleBankServiceException.class);
 			
 			try
 			{
@@ -205,11 +204,11 @@ public class ServiceLayerSessionsTest
 			}
 			catch (SimpleBankServiceException ex)
 			{
-				verify(repository, only()).login(sign);
-				clearInvocations(repository);
+				verify(sessionsRepository, only()).add(sign);
+				clearInvocations(sessionsRepository);
 			}
 
-			verify(repository, times(0)).login(sign);
+			verify(sessionsRepository, times(0)).add(sign);
 		}
 
 		// Error handling

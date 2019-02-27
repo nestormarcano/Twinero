@@ -1,6 +1,8 @@
-package com.twinero.jtasks.nm.simplebanking.beans;
+package com.twinero.jtasks.nm.simplebanking.web.beans;
 
 import java.util.Objects;
+
+import com.twinero.jtasks.nm.simplebanking.repository.beans.Withdraw;
 
 public class WithdrawReq
 {

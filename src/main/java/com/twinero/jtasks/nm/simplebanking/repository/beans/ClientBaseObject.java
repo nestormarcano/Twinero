@@ -1,4 +1,4 @@
-package com.twinero.jtasks.nm.simplebanking.beans;
+package com.twinero.jtasks.nm.simplebanking.repository.beans;
 
 import java.util.Objects;
 
@@ -6,11 +6,11 @@ public abstract class ClientBaseObject
 {
 	private long clientID;
 
-	ClientBaseObject ()
+	public ClientBaseObject ()
 	{
 	}
 	
-	ClientBaseObject (long theClientID)
+	public ClientBaseObject (long theClientID)
 	{
 		this.clientID = theClientID;
 	}

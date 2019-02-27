@@ -1,4 +1,4 @@
-package com.twinero.jtasks.nm.simplebanking.beans;
+package com.twinero.jtasks.nm.simplebanking.repository.beans;
 
 import java.util.Objects;
 

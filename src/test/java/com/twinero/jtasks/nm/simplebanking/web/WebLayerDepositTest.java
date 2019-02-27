@@ -14,14 +14,14 @@ import org.springframework.http.MediaType;
 
 import org.springframework.test.web.servlet.MockMvc;
 
-import com.twinero.jtasks.nm.simplebanking.beans.Deposit;
-import com.twinero.jtasks.nm.simplebanking.beans.DepositReq;
-import com.twinero.jtasks.nm.simplebanking.beans.DepositResp;
-import com.twinero.jtasks.nm.simplebanking.beans.Session;
-import com.twinero.jtasks.nm.simplebanking.exception.SimpleBankServiceException;
+import com.twinero.jtasks.nm.simplebanking.repository.beans.Deposit;
+import com.twinero.jtasks.nm.simplebanking.repository.beans.DepositResp;
+import com.twinero.jtasks.nm.simplebanking.repository.beans.Session;
+import com.twinero.jtasks.nm.simplebanking.repository.exception.SimpleBankServiceException;
 import com.twinero.jtasks.nm.simplebanking.service.SimpleBankService;
 import com.twinero.jtasks.nm.simplebanking.utils.Util;
 import com.twinero.jtasks.nm.simplebanking.web.SimpleBankingController;
+import com.twinero.jtasks.nm.simplebanking.web.beans.DepositReq;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.mockito.Mockito.when;

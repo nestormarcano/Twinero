@@ -1,4 +1,4 @@
-package com.twinero.jtasks.nm.simplebanking.exception;
+package com.twinero.jtasks.nm.simplebanking.repository.exception;
 
 public class SimpleBankServiceException extends Exception
 {

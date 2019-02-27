@@ -13,22 +13,22 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.twinero.jtasks.nm.simplebanking.beans.AccountBalance;
-import com.twinero.jtasks.nm.simplebanking.beans.AccountBalanceResp;
-import com.twinero.jtasks.nm.simplebanking.beans.AccountStatement;
-import com.twinero.jtasks.nm.simplebanking.beans.AccountStatementResp;
-import com.twinero.jtasks.nm.simplebanking.beans.Deposit;
-import com.twinero.jtasks.nm.simplebanking.beans.DepositReq;
-import com.twinero.jtasks.nm.simplebanking.beans.DepositResp;
-import com.twinero.jtasks.nm.simplebanking.beans.Session;
-import com.twinero.jtasks.nm.simplebanking.beans.Sign;
-import com.twinero.jtasks.nm.simplebanking.beans.SignupResp;
-import com.twinero.jtasks.nm.simplebanking.beans.Withdraw;
-import com.twinero.jtasks.nm.simplebanking.beans.WithdrawReq;
-import com.twinero.jtasks.nm.simplebanking.beans.WithdrawResp;
-import com.twinero.jtasks.nm.simplebanking.exception.SimpleBankServiceException;
+import com.twinero.jtasks.nm.simplebanking.repository.beans.AccountBalance;
+import com.twinero.jtasks.nm.simplebanking.repository.beans.AccountBalanceResp;
+import com.twinero.jtasks.nm.simplebanking.repository.beans.AccountStatement;
+import com.twinero.jtasks.nm.simplebanking.repository.beans.AccountStatementResp;
+import com.twinero.jtasks.nm.simplebanking.repository.beans.Deposit;
+import com.twinero.jtasks.nm.simplebanking.repository.beans.DepositResp;
+import com.twinero.jtasks.nm.simplebanking.repository.beans.Session;
+import com.twinero.jtasks.nm.simplebanking.repository.beans.Sign;
+import com.twinero.jtasks.nm.simplebanking.repository.beans.SignupResp;
+import com.twinero.jtasks.nm.simplebanking.repository.beans.Withdraw;
+import com.twinero.jtasks.nm.simplebanking.repository.beans.WithdrawResp;
+import com.twinero.jtasks.nm.simplebanking.repository.exception.SimpleBankServiceException;
 import com.twinero.jtasks.nm.simplebanking.service.SimpleBankService;
 import com.twinero.jtasks.nm.simplebanking.utils.Util;
+import com.twinero.jtasks.nm.simplebanking.web.beans.DepositReq;
+import com.twinero.jtasks.nm.simplebanking.web.beans.WithdrawReq;
 
 @RestController
 @RequestMapping("/simpleBanking")
