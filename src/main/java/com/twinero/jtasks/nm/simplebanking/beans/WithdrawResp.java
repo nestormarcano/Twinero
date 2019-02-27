@@ -6,7 +6,7 @@ public class WithdrawResp
 {
 	public static enum Status
 	{
-		OK, SESSION_EXPIRED, SESSION_DOES_NOT_EXISTS, INVALID_CLIENT, SERVER_ERROR;
+		OK, SESSION_EXPIRED, SESSION_DOES_NOT_EXIST, INVALID_CLIENT, SERVER_ERROR;
 	}
 
 	private Status status;

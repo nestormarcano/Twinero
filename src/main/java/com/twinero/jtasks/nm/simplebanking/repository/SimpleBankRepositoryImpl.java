@@ -12,6 +12,7 @@ import com.twinero.jtasks.nm.simplebanking.beans.SignupResp;
 import com.twinero.jtasks.nm.simplebanking.beans.Withdraw;
 import com.twinero.jtasks.nm.simplebanking.beans.WithdrawResp;
 import com.twinero.jtasks.nm.simplebanking.exception.SimpleBankServiceException;
+import com.twinero.jtasks.nm.simplebanking.repository.beans.SesionStatus;
 
 @Repository
 public class SimpleBankRepositoryImpl implements SimpleBankRepository
@@ -51,8 +52,7 @@ public class SimpleBankRepositoryImpl implements SimpleBankRepository
 	 */
 	// -----------------------------------------------------------------------------------------------------------------
 	@Override
-	public AccountBalanceResp getAccountBalance (long clientID,
-																String sessionID )
+	public AccountBalanceResp getAccountBalance (long clientID )
 		throws SimpleBankServiceException
 	{
 		// TODO Auto-generated method stub
@@ -66,8 +66,7 @@ public class SimpleBankRepositoryImpl implements SimpleBankRepository
 	 */
 	// -----------------------------------------------------------------------------------------------------------------
 	@Override
-	public AccountStatementResp getAccountStatement (	long clientID,
-																		String sessionID )
+	public AccountStatementResp getAccountStatement (long clientID )
 		throws SimpleBankServiceException
 	{
 		// TODO Auto-generated method stub
@@ -81,8 +80,7 @@ public class SimpleBankRepositoryImpl implements SimpleBankRepository
 	 */
 	// -----------------------------------------------------------------------------------------------------------------
 	@Override
-	public DepositResp doDeposit (Deposit deposit,
-											String sessionID )
+	public DepositResp doDeposit (Deposit deposit )
 		throws SimpleBankServiceException
 	{
 		// TODO Auto-generated method stub
@@ -96,8 +94,21 @@ public class SimpleBankRepositoryImpl implements SimpleBankRepository
 	 */
 	// -----------------------------------------------------------------------------------------------------------------
 	@Override
-	public WithdrawResp doWithdraw (	Withdraw withdraw,
-												String sessionID )
+	public WithdrawResp doWithdraw (Withdraw withdraw )
+		throws SimpleBankServiceException
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	// -----------------------------------------------------------------------------------------------------------------
+	// --------------------------------------------------------------------------------------------------- verifySession
+	/**
+	 * {@inheritDoc}
+	 */
+	// -----------------------------------------------------------------------------------------------------------------
+	@Override
+	public SesionStatus verifySession (String sessionID )
 		throws SimpleBankServiceException
 	{
 		// TODO Auto-generated method stub

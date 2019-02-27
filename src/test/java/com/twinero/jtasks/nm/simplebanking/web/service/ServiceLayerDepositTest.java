@@ -1,10 +1,12 @@
-package com.twinero.jtasks.nm.simplebanking.service;
+package com.twinero.jtasks.nm.simplebanking.web.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
-
+import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.only;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import org.junit.Test;
@@ -20,6 +22,8 @@ import com.twinero.jtasks.nm.simplebanking.beans.DepositResp;
 import com.twinero.jtasks.nm.simplebanking.beans.Session;
 import com.twinero.jtasks.nm.simplebanking.exception.SimpleBankServiceException;
 import com.twinero.jtasks.nm.simplebanking.repository.SimpleBankRepository;
+import com.twinero.jtasks.nm.simplebanking.repository.beans.SesionStatus;
+import com.twinero.jtasks.nm.simplebanking.service.SimpleBankService;
 
 @SpringBootTest
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -53,12 +57,15 @@ public class ServiceLayerDepositTest
 			Deposit depositForResp = new Deposit(123);
 			DepositResp expectedDepositReps = new DepositResp(depositForResp, DepositResp.Status.OK);
 
-			when(repository.doDeposit(deposit, session.getSessionID())).thenReturn(expectedDepositReps);
+			when(repository.verifySession(session.getSessionID())).thenReturn(SesionStatus.OK);
+			when(repository.doDeposit(deposit)).thenReturn(expectedDepositReps);
 
 			DepositResp obtainedDepositResp = service.doDeposit(deposit, session.getSessionID());
 
 			assertThat(obtainedDepositResp).isEqualTo(expectedDepositReps);
-			verify(repository, only()).doDeposit(deposit, session.getSessionID());
+			verify(repository, times(1)).verifySession(session.getSessionID());
+			verify(repository, times(1)).doDeposit(deposit);
+			verifyNoMoreInteractions(repository);
 		}
 
 		// Error handling
@@ -95,12 +102,15 @@ public class ServiceLayerDepositTest
 			Deposit depositForResp = new Deposit(123);
 			DepositResp expectedDepositReps = new DepositResp(depositForResp, DepositResp.Status.INVALID_CLIENT);
 
-			when(repository.doDeposit(deposit, session.getSessionID())).thenReturn(expectedDepositReps);
+			when(repository.verifySession(session.getSessionID())).thenReturn(SesionStatus.OK);
+			when(repository.doDeposit(deposit)).thenReturn(expectedDepositReps);
 
 			DepositResp obtainedDepositResp = service.doDeposit(deposit, session.getSessionID());
 
 			assertThat(obtainedDepositResp).isEqualTo(expectedDepositReps);
-			verify(repository, only()).doDeposit(deposit, session.getSessionID());
+			verify(repository, times(1)).verifySession(session.getSessionID());
+			verify(repository, times(1)).doDeposit(deposit);
+			verifyNoMoreInteractions(repository);
 		}
 
 		// Error handling
@@ -114,7 +124,7 @@ public class ServiceLayerDepositTest
 			assertTrue(false);
 		}
 	}
-	
+
 	// -----------------------------------------------------------------------------------------------------------------
 	// --------------------------------------------------------------------------- shouldNotDepositBecauseExpiredSession
 	/**
@@ -131,18 +141,18 @@ public class ServiceLayerDepositTest
 			Session session = new Session("5dd35b40-2410-11e9-b56e-0800200c9a66");
 			session.setClientID(clientID);
 
-			Deposit deposit = new Deposit();
+			Deposit deposit = new Deposit(123);
 			deposit.setClientID(session.getClientID());
 
-			Deposit depositForResp = new Deposit(123);
-			DepositResp expectedDepositReps = new DepositResp(depositForResp, DepositResp.Status.SESSION_EXPIRED);
+			Deposit expectedDeposit = new Deposit();
+			DepositResp expectedDepositResp = new DepositResp(expectedDeposit, DepositResp.Status.SESSION_EXPIRED);
 
-			when(repository.doDeposit(deposit, session.getSessionID())).thenReturn(expectedDepositReps);
+			when(repository.verifySession(session.getSessionID())).thenReturn(SesionStatus.EXPIRED);
 
 			DepositResp obtainedDepositResp = service.doDeposit(deposit, session.getSessionID());
 
-			assertThat(obtainedDepositResp).isEqualTo(expectedDepositReps);
-			verify(repository, only()).doDeposit(deposit, session.getSessionID());
+			assertThat(obtainedDepositResp).isEqualTo(expectedDepositResp);
+			verify(repository, only()).verifySession(session.getSessionID());
 		}
 
 		// Error handling
@@ -156,7 +166,7 @@ public class ServiceLayerDepositTest
 			assertTrue(false);
 		}
 	}
-	
+
 	// -----------------------------------------------------------------------------------------------------------------
 	// --------------------------------------------------------------------------- shouldNotDepositBecauseInvalidSession
 	/**
@@ -176,15 +186,15 @@ public class ServiceLayerDepositTest
 			Deposit deposit = new Deposit();
 			deposit.setClientID(session.getClientID());
 
-			Deposit depositForResp = new Deposit(123);
-			DepositResp expectedDepositReps = new DepositResp(depositForResp, DepositResp.Status.SESSION_DOES_NOT_EXISTS);
+			Deposit expectedDeposit = new Deposit();
+			DepositResp expectedDepositResp = new DepositResp(expectedDeposit, DepositResp.Status.SESSION_DOES_NOT_EXIST);
 
-			when(repository.doDeposit(deposit, session.getSessionID())).thenReturn(expectedDepositReps);
+			when(repository.verifySession(session.getSessionID())).thenReturn(SesionStatus.NOT_EXISTS);
 
 			DepositResp obtainedDepositResp = service.doDeposit(deposit, session.getSessionID());
 
-			assertThat(obtainedDepositResp).isEqualTo(expectedDepositReps);
-			verify(repository, only()).doDeposit(deposit, session.getSessionID());
+			assertThat(obtainedDepositResp).isEqualTo(expectedDepositResp);
+			verify(repository, only()).verifySession(session.getSessionID());
 		}
 
 		// Error handling
@@ -198,7 +208,7 @@ public class ServiceLayerDepositTest
 			assertTrue(false);
 		}
 	}
-	
+
 	// -----------------------------------------------------------------------------------------------------------------
 	// ------------------------------------------------------------------------------ shouldNotDepositBecauseServerError
 	/**
@@ -218,15 +228,24 @@ public class ServiceLayerDepositTest
 			Deposit deposit = new Deposit();
 			deposit.setClientID(session.getClientID());
 
-			Deposit depositForResp = new Deposit(123);
-			DepositResp expectedDepositReps = new DepositResp(depositForResp, DepositResp.Status.SERVER_ERROR);
+			when(repository.verifySession(session.getSessionID())).thenReturn(SesionStatus.OK);
+			when(repository.doDeposit(deposit)).thenThrow(SimpleBankServiceException.class);
 
-			when(repository.doDeposit(deposit, session.getSessionID())).thenReturn(expectedDepositReps);
+			try
+			{
+				service.doDeposit(deposit, session.getSessionID());
+			}
+			catch (SimpleBankServiceException ex)
+			{
+				verify(repository, times(1)).verifySession(session.getSessionID());
+				verify(repository, times(1)).doDeposit(deposit);
+				verifyNoMoreInteractions(repository);
+				clearInvocations(repository);
+			}
 
-			DepositResp obtainedDepositResp = service.doDeposit(deposit, session.getSessionID());
-
-			assertThat(obtainedDepositResp).isEqualTo(expectedDepositReps);
-			verify(repository, only()).doDeposit(deposit, session.getSessionID());
+			verify(repository, times(0)).verifySession(session.getSessionID());
+			verify(repository, times(0)).doDeposit(deposit);
+			verifyNoMoreInteractions(repository);
 		}
 
 		// Error handling

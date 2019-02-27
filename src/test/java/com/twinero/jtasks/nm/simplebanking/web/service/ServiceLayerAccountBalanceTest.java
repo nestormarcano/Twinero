@@ -1,4 +1,4 @@
-package com.twinero.jtasks.nm.simplebanking.service;
+package com.twinero.jtasks.nm.simplebanking.web.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -6,6 +6,7 @@ import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.only;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import org.junit.Test;
@@ -20,6 +21,8 @@ import com.twinero.jtasks.nm.simplebanking.beans.AccountBalance;
 import com.twinero.jtasks.nm.simplebanking.beans.AccountBalanceResp;
 import com.twinero.jtasks.nm.simplebanking.exception.SimpleBankServiceException;
 import com.twinero.jtasks.nm.simplebanking.repository.SimpleBankRepository;
+import com.twinero.jtasks.nm.simplebanking.repository.beans.SesionStatus;
+import com.twinero.jtasks.nm.simplebanking.service.SimpleBankService;
 
 @SpringBootTest
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -50,12 +53,15 @@ public class ServiceLayerAccountBalanceTest
 			AccountBalanceResp expectedAccountBalance = new AccountBalanceResp(balance,
 					AccountBalanceResp.Status.OK);
 
-			when(repository.getAccountBalance(clientID, sessionID)).thenReturn(expectedAccountBalance);
+			when(repository.verifySession(sessionID)).thenReturn(SesionStatus.OK);
+			when(repository.getAccountBalance(clientID)).thenReturn(expectedAccountBalance);
 
 			AccountBalanceResp obtainedAccountBalance = service.getAccountBalance(clientID, sessionID);
 
 			assertThat(obtainedAccountBalance).isEqualTo(expectedAccountBalance);
-			verify(repository, only()).getAccountBalance(clientID, sessionID);
+			verify(repository, times(1)).verifySession(sessionID);
+			verify(repository, times(1)).getAccountBalance(clientID);
+			verifyNoMoreInteractions(repository);
 		}
 
 		// Error handling
@@ -88,12 +94,12 @@ public class ServiceLayerAccountBalanceTest
 			AccountBalanceResp expectedAccountBalance = new AccountBalanceResp(balance,
 					AccountBalanceResp.Status.SESSION_EXPIRED);
 
-			when(repository.getAccountBalance(clientID, sessionID)).thenReturn(expectedAccountBalance);
+			when(repository.verifySession(sessionID)).thenReturn(SesionStatus.EXPIRED);
 
 			AccountBalanceResp obtainedAccountBalance = service.getAccountBalance(clientID, sessionID);
 
 			assertThat(obtainedAccountBalance).isEqualTo(expectedAccountBalance);
-			verify(repository, only()).getAccountBalance(clientID, sessionID);
+			verify(repository, only()).verifySession(sessionID);
 		}
 
 		// Error handling
@@ -124,14 +130,15 @@ public class ServiceLayerAccountBalanceTest
 
 			AccountBalance balance = new AccountBalance();
 			AccountBalanceResp expectedAccountBalance = new AccountBalanceResp(balance,
-					AccountBalanceResp.Status.SESSION_DOES_NOT_EXISTS);
+					AccountBalanceResp.Status.SESSION_DOES_NOT_EXIST);
 
-			when(repository.getAccountBalance(clientID, sessionID)).thenReturn(expectedAccountBalance);
+			when(repository.verifySession(sessionID)).thenReturn(SesionStatus.NOT_EXISTS);
 
 			AccountBalanceResp obtainedAccountBalance = service.getAccountBalance(clientID, sessionID);
 
 			assertThat(obtainedAccountBalance).isEqualTo(expectedAccountBalance);
-			verify(repository, only()).getAccountBalance(clientID, sessionID);
+			verify(repository, times(1)).verifySession(sessionID);
+			verifyNoMoreInteractions(repository);
 		}
 
 		// Error handling
@@ -160,7 +167,8 @@ public class ServiceLayerAccountBalanceTest
 			long clientID = 10;
 			String sessionID = "5dd35b40-2410-11e9-b56e-0800200c9a66";
 
-			when(repository.getAccountBalance(clientID, sessionID)).thenThrow(SimpleBankServiceException.class);
+			when(repository.verifySession(sessionID)).thenReturn(SesionStatus.OK);
+			when(repository.getAccountBalance(clientID)).thenThrow(SimpleBankServiceException.class);
 
 			try
 			{
@@ -168,11 +176,15 @@ public class ServiceLayerAccountBalanceTest
 			}
 			catch (SimpleBankServiceException ex)
 			{
-				verify(repository, only()).getAccountBalance(clientID, sessionID);
+				verify(repository, times(1)).verifySession(sessionID);
+				verify(repository, times(1)).getAccountBalance(clientID);
+				verifyNoMoreInteractions(repository);
 				clearInvocations(repository);
 			}
 
-			verify(repository, times(0)).getAccountBalance(clientID, sessionID);
+			verify(repository, times(0)).verifySession(sessionID);
+			verify(repository, times(0)).getAccountBalance(clientID);
+			verifyNoMoreInteractions(repository);
 		}
 
 		// Error handling

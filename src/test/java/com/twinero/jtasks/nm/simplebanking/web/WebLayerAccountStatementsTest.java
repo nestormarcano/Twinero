@@ -1,4 +1,4 @@
-package com.twinero.jtasks.nm.simplebanking;
+package com.twinero.jtasks.nm.simplebanking.web;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -127,7 +127,7 @@ public class WebLayerAccountStatementsTest
 
 		AccountStatement statement = new AccountStatement();
 		AccountStatementResp statementResp = new AccountStatementResp(statement,
-				AccountStatementResp.Status.SESSION_DOES_NOT_EXISTS);
+				AccountStatementResp.Status.SESSION_DOES_NOT_EXIST);
 
 		when(service.getAccountStatement(session.getClientID(), session.getSessionID())).thenReturn(statementResp);
 

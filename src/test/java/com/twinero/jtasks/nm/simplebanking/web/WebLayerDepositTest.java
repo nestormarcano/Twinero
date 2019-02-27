@@ -1,4 +1,4 @@
-package com.twinero.jtasks.nm.simplebanking;
+package com.twinero.jtasks.nm.simplebanking.web;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -174,7 +174,7 @@ public class WebLayerDepositTest
 		DepositReq depositReq = new DepositReq(deposit, session.getSessionID());
 		
 		Deposit expectedDeposit = new Deposit();
-		DepositResp expectedDepositResp = new DepositResp(expectedDeposit, DepositResp.Status.SESSION_DOES_NOT_EXISTS);
+		DepositResp expectedDepositResp = new DepositResp(expectedDeposit, DepositResp.Status.SESSION_DOES_NOT_EXIST);
 		
 		when(service.doDeposit(deposit, session.getSessionID())).thenReturn((expectedDepositResp));
 

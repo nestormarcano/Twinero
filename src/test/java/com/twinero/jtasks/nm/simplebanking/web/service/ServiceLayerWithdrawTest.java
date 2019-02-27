@@ -1,10 +1,12 @@
-package com.twinero.jtasks.nm.simplebanking.service;
+package com.twinero.jtasks.nm.simplebanking.web.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
-
+import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.only;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import org.junit.Test;
@@ -20,6 +22,8 @@ import com.twinero.jtasks.nm.simplebanking.beans.WithdrawResp;
 import com.twinero.jtasks.nm.simplebanking.beans.Session;
 import com.twinero.jtasks.nm.simplebanking.exception.SimpleBankServiceException;
 import com.twinero.jtasks.nm.simplebanking.repository.SimpleBankRepository;
+import com.twinero.jtasks.nm.simplebanking.repository.beans.SesionStatus;
+import com.twinero.jtasks.nm.simplebanking.service.SimpleBankService;
 
 @SpringBootTest
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -50,15 +54,18 @@ public class ServiceLayerWithdrawTest
 			Withdraw withdraw = new Withdraw();
 			withdraw.setClientID(session.getClientID());
 
-			Withdraw withdrawForResp = new Withdraw(123);
-			WithdrawResp expectedWithdrawReps = new WithdrawResp(withdrawForResp, WithdrawResp.Status.OK);
+			Withdraw expectedWithdraw = new Withdraw(123);
+			WithdrawResp expectedWithdrawResp = new WithdrawResp(expectedWithdraw, WithdrawResp.Status.OK);
 
-			when(repository.doWithdraw(withdraw, session.getSessionID())).thenReturn(expectedWithdrawReps);
+			when(repository.verifySession(session.getSessionID())).thenReturn(SesionStatus.OK);
+			when(repository.doWithdraw(withdraw)).thenReturn(expectedWithdrawResp);
 
-			WithdrawResp obtainedDepositResp = service.doWithdraw(withdraw, session.getSessionID());
+			WithdrawResp obtainedWithdrawResp = service.doWithdraw(withdraw, session.getSessionID());
 
-			assertThat(obtainedDepositResp).isEqualTo(expectedWithdrawReps);
-			verify(repository, only()).doWithdraw(withdraw, session.getSessionID());
+			assertThat(obtainedWithdrawResp).isEqualTo(expectedWithdrawResp);
+			verify(repository, times(1)).verifySession(session.getSessionID());
+			verify(repository, times(1)).doWithdraw(withdraw);
+			verifyNoMoreInteractions(repository);
 		}
 
 		// Error handling
@@ -92,15 +99,18 @@ public class ServiceLayerWithdrawTest
 			Withdraw withdraw = new Withdraw();
 			withdraw.setClientID(session.getClientID());
 
-			Withdraw withdrawForResp = new Withdraw(123);
-			WithdrawResp expectedWithdrawReps = new WithdrawResp(withdrawForResp, WithdrawResp.Status.INVALID_CLIENT);
+			Withdraw expectedWithdraw = new Withdraw();
+			WithdrawResp expectedWithdrawResp = new WithdrawResp(expectedWithdraw, WithdrawResp.Status.INVALID_CLIENT);
 
-			when(repository.doWithdraw(withdraw, session.getSessionID())).thenReturn(expectedWithdrawReps);
+			when(repository.verifySession(session.getSessionID())).thenReturn(SesionStatus.OK);
+			when(repository.doWithdraw(withdraw)).thenReturn(expectedWithdrawResp);
 
-			WithdrawResp obtainedDepositResp = service.doWithdraw(withdraw, session.getSessionID());
+			WithdrawResp obtainedWithdrawResp = service.doWithdraw(withdraw, session.getSessionID());
 
-			assertThat(obtainedDepositResp).isEqualTo(expectedWithdrawReps);
-			verify(repository, only()).doWithdraw(withdraw, session.getSessionID());
+			assertThat(obtainedWithdrawResp).isEqualTo(expectedWithdrawResp);
+			verify(repository, times(1)).verifySession(session.getSessionID());
+			verify(repository, times(1)).doWithdraw(withdraw);
+			verifyNoMoreInteractions(repository);
 		}
 
 		// Error handling
@@ -114,7 +124,7 @@ public class ServiceLayerWithdrawTest
 			assertTrue(false);
 		}
 	}
-	
+
 	// -----------------------------------------------------------------------------------------------------------------
 	// --------------------------------------------------------------------------- shouldNotDepositBecauseExpiredSession
 	/**
@@ -134,15 +144,15 @@ public class ServiceLayerWithdrawTest
 			Withdraw withdraw = new Withdraw();
 			withdraw.setClientID(session.getClientID());
 
-			Withdraw withdrawForResp = new Withdraw(123);
-			WithdrawResp expectedWithdrawReps = new WithdrawResp(withdrawForResp, WithdrawResp.Status.SESSION_EXPIRED);
+			Withdraw expectedWithdraw = new Withdraw();
+			WithdrawResp expectedWithdrawResp = new WithdrawResp(expectedWithdraw, WithdrawResp.Status.SESSION_EXPIRED);
 
-			when(repository.doWithdraw(withdraw, session.getSessionID())).thenReturn(expectedWithdrawReps);
+			when(repository.verifySession(session.getSessionID())).thenReturn(SesionStatus.EXPIRED);
 
-			WithdrawResp obtainedDepositResp = service.doWithdraw(withdraw, session.getSessionID());
+			WithdrawResp obtainedWithdrawResp = service.doWithdraw(withdraw, session.getSessionID());
 
-			assertThat(obtainedDepositResp).isEqualTo(expectedWithdrawReps);
-			verify(repository, only()).doWithdraw(withdraw, session.getSessionID());
+			assertThat(obtainedWithdrawResp).isEqualTo(expectedWithdrawResp);
+			verify(repository, only()).verifySession(session.getSessionID());
 		}
 
 		// Error handling
@@ -156,7 +166,7 @@ public class ServiceLayerWithdrawTest
 			assertTrue(false);
 		}
 	}
-	
+
 	// -----------------------------------------------------------------------------------------------------------------
 	// --------------------------------------------------------------------------- shouldNotDepositBecauseInvalidSession
 	/**
@@ -176,15 +186,16 @@ public class ServiceLayerWithdrawTest
 			Withdraw withdraw = new Withdraw();
 			withdraw.setClientID(session.getClientID());
 
-			Withdraw withdrawForResp = new Withdraw(123);
-			WithdrawResp expectedWithdrawReps = new WithdrawResp(withdrawForResp, WithdrawResp.Status.SESSION_DOES_NOT_EXISTS);
+			Withdraw expectedWithdraw = new Withdraw();
+			WithdrawResp expectedWithdrawResp = new WithdrawResp(expectedWithdraw,
+					WithdrawResp.Status.SESSION_DOES_NOT_EXIST);
 
-			when(repository.doWithdraw(withdraw, session.getSessionID())).thenReturn(expectedWithdrawReps);
+			when(repository.verifySession(session.getSessionID())).thenReturn(SesionStatus.NOT_EXISTS);
 
-			WithdrawResp obtainedDepositResp = service.doWithdraw(withdraw, session.getSessionID());
+			WithdrawResp obtainedWithdrawResp = service.doWithdraw(withdraw, session.getSessionID());
 
-			assertThat(obtainedDepositResp).isEqualTo(expectedWithdrawReps);
-			verify(repository, only()).doWithdraw(withdraw, session.getSessionID());
+			assertThat(obtainedWithdrawResp).isEqualTo(expectedWithdrawResp);
+			verify(repository, only()).verifySession(session.getSessionID());
 		}
 
 		// Error handling
@@ -198,7 +209,7 @@ public class ServiceLayerWithdrawTest
 			assertTrue(false);
 		}
 	}
-	
+
 	// -----------------------------------------------------------------------------------------------------------------
 	// ------------------------------------------------------------------------------ shouldNotDepositBecauseServerError
 	/**
@@ -218,15 +229,24 @@ public class ServiceLayerWithdrawTest
 			Withdraw withdraw = new Withdraw();
 			withdraw.setClientID(session.getClientID());
 
-			Withdraw withdrawForResp = new Withdraw(123);
-			WithdrawResp expectedWithdrawReps = new WithdrawResp(withdrawForResp, WithdrawResp.Status.SERVER_ERROR);
+			when(repository.verifySession(session.getSessionID())).thenReturn(SesionStatus.OK);
+			when(repository.doWithdraw(withdraw)).thenThrow(SimpleBankServiceException.class);
 
-			when(repository.doWithdraw(withdraw, session.getSessionID())).thenReturn(expectedWithdrawReps);
+			try
+			{
+				service.doWithdraw(withdraw, session.getSessionID());
+			}
+			catch (SimpleBankServiceException ex)
+			{
+				verify(repository, times(1)).verifySession(session.getSessionID());
+				verify(repository, times(1)).doWithdraw(withdraw);
+				verifyNoMoreInteractions(repository);
+				clearInvocations(repository);
+			}
 
-			WithdrawResp obtainedDepositResp = service.doWithdraw(withdraw, session.getSessionID());
-
-			assertThat(obtainedDepositResp).isEqualTo(expectedWithdrawReps);
-			verify(repository, only()).doWithdraw(withdraw, session.getSessionID());
+			verify(repository, times(0)).verifySession(session.getSessionID());
+			verify(repository, times(0)).doWithdraw(withdraw);
+			verifyNoMoreInteractions(repository);
 		}
 
 		// Error handling
@@ -241,4 +261,3 @@ public class ServiceLayerWithdrawTest
 		}
 	}
 }
-

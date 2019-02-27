@@ -6,7 +6,7 @@ public class AccountBalanceResp
 {
 	public static enum Status
 	{
-		OK, SESSION_EXPIRED, SESSION_DOES_NOT_EXISTS, SERVER_ERROR;
+		OK, SESSION_EXPIRED, SESSION_DOES_NOT_EXIST, SERVER_ERROR;
 	}
 
 	private Status status;

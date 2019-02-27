@@ -1,4 +1,4 @@
-package com.twinero.jtasks.nm.simplebanking;
+package com.twinero.jtasks.nm.simplebanking.web;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -178,7 +178,7 @@ public class WebLayerWithdrawTest
 		WithdrawReq withdrawReq = new WithdrawReq(withdrawForReq, session.getSessionID());
 
 		Withdraw withdrawForResp = new Withdraw();
-		WithdrawResp withdrawResp = new WithdrawResp(withdrawForResp, WithdrawResp.Status.SESSION_DOES_NOT_EXISTS);
+		WithdrawResp withdrawResp = new WithdrawResp(withdrawForResp, WithdrawResp.Status.SESSION_DOES_NOT_EXIST);
 
 		when(service.doWithdraw(withdrawForReq, session.getSessionID())).thenReturn((withdrawResp));
 

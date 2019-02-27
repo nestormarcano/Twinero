@@ -1,4 +1,4 @@
-package com.twinero.jtasks.nm.simplebanking;
+package com.twinero.jtasks.nm.simplebanking.web;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

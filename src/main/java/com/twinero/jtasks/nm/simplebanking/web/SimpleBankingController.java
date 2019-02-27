@@ -118,6 +118,7 @@ public class SimpleBankingController
 	/**
 	 * Get the account balance for the client.
 	 * 
+	 * @param clientID The client's ID.
 	 * @param sessionID The sessionID returned by login.
 	 * @return An object with the account balance.
 	 */
@@ -135,7 +136,7 @@ public class SimpleBankingController
 			switch (response.getStatus())
 			{
 				case SESSION_EXPIRED:
-				case SESSION_DOES_NOT_EXISTS:
+				case SESSION_DOES_NOT_EXIST:
 					status = HttpStatus.UNAUTHORIZED;
 					break;
 
@@ -162,6 +163,7 @@ public class SimpleBankingController
 	/**
 	 * Get the account statement for the client.
 	 * 
+	 * @param clientID The client's ID.
 	 * @param sessionID The sessionID returned by login.
 	 * @return An object with the account balance.
 	 */
@@ -179,7 +181,7 @@ public class SimpleBankingController
 			switch (response.getStatus())
 			{
 				case SESSION_EXPIRED:
-				case SESSION_DOES_NOT_EXISTS:
+				case SESSION_DOES_NOT_EXIST:
 					status = HttpStatus.UNAUTHORIZED;
 					break;
 
@@ -226,7 +228,7 @@ public class SimpleBankingController
 					break;
 
 				case SESSION_EXPIRED:
-				case SESSION_DOES_NOT_EXISTS:
+				case SESSION_DOES_NOT_EXIST:
 					status = HttpStatus.UNAUTHORIZED;
 					break;
 
@@ -272,7 +274,7 @@ public class SimpleBankingController
 					break;
 
 				case SESSION_EXPIRED:
-				case SESSION_DOES_NOT_EXISTS:
+				case SESSION_DOES_NOT_EXIST:
 					status = HttpStatus.UNAUTHORIZED;
 					break;
 

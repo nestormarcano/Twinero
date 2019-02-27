@@ -1,4 +1,4 @@
-package com.twinero.jtasks.nm.simplebanking.service;
+package com.twinero.jtasks.nm.simplebanking.web.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -6,6 +6,7 @@ import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.only;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import org.junit.Test;
@@ -20,6 +21,8 @@ import com.twinero.jtasks.nm.simplebanking.beans.AccountStatement;
 import com.twinero.jtasks.nm.simplebanking.beans.AccountStatementResp;
 import com.twinero.jtasks.nm.simplebanking.exception.SimpleBankServiceException;
 import com.twinero.jtasks.nm.simplebanking.repository.SimpleBankRepository;
+import com.twinero.jtasks.nm.simplebanking.repository.beans.SesionStatus;
+import com.twinero.jtasks.nm.simplebanking.service.SimpleBankService;
 
 @SpringBootTest
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -50,12 +53,15 @@ public class ServiceLayerAccountStatementTest
 			AccountStatementResp expectedAccountStatement = new AccountStatementResp(statement,
 					AccountStatementResp.Status.OK);
 
-			when(repository.getAccountStatement(clientID, sessionID)).thenReturn(expectedAccountStatement);
+			when(repository.verifySession(sessionID)).thenReturn(SesionStatus.OK);
+			when(repository.getAccountStatement(clientID)).thenReturn(expectedAccountStatement);
 
 			AccountStatementResp obtainedAccountStatement = service.getAccountStatement(clientID, sessionID);
 
 			assertThat(obtainedAccountStatement).isEqualTo(expectedAccountStatement);
-			verify(repository, only()).getAccountStatement(clientID, sessionID);
+			verify(repository, times(1)).verifySession(sessionID);
+			verify(repository, times(1)).getAccountStatement(clientID);
+			verifyNoMoreInteractions(repository);
 		}
 
 		// Error handling
@@ -88,12 +94,12 @@ public class ServiceLayerAccountStatementTest
 			AccountStatementResp expectedAccountStatement = new AccountStatementResp(statement,
 					AccountStatementResp.Status.SESSION_EXPIRED);
 
-			when(repository.getAccountStatement(clientID, sessionID)).thenReturn(expectedAccountStatement);
+			when(repository.verifySession(sessionID)).thenReturn(SesionStatus.EXPIRED);
 
 			AccountStatementResp obtainedAccountStatement = service.getAccountStatement(clientID, sessionID);
 
 			assertThat(obtainedAccountStatement).isEqualTo(expectedAccountStatement);
-			verify(repository, only()).getAccountStatement(clientID, sessionID);
+			verify(repository, only()).verifySession(sessionID);
 		}
 
 		// Error handling
@@ -124,14 +130,14 @@ public class ServiceLayerAccountStatementTest
 
 			AccountStatement statement = new AccountStatement();
 			AccountStatementResp expectedAccountStatement = new AccountStatementResp(statement,
-					AccountStatementResp.Status.SESSION_DOES_NOT_EXISTS);
+					AccountStatementResp.Status.SESSION_DOES_NOT_EXIST);
 
-			when(repository.getAccountStatement(clientID, sessionID)).thenReturn(expectedAccountStatement);
+			when(repository.verifySession(sessionID)).thenReturn(SesionStatus.NOT_EXISTS);
 
 			AccountStatementResp obtainedAccountStatement = service.getAccountStatement(clientID, sessionID);
 
 			assertThat(obtainedAccountStatement).isEqualTo(expectedAccountStatement);
-			verify(repository, only()).getAccountStatement(clientID, sessionID);
+			verify(repository, only()).verifySession(sessionID);
 		}
 
 		// Error handling
@@ -160,7 +166,8 @@ public class ServiceLayerAccountStatementTest
 			long clientID = 10;
 			String sessionID = "5dd35b40-2410-11e9-b56e-0800200c9a66";
 
-			when(repository.getAccountStatement(clientID, sessionID)).thenThrow(SimpleBankServiceException.class);
+			when(repository.verifySession(sessionID)).thenReturn(SesionStatus.OK);
+			when(repository.getAccountStatement(clientID)).thenThrow(SimpleBankServiceException.class);
 
 			try
 			{
@@ -168,11 +175,14 @@ public class ServiceLayerAccountStatementTest
 			}
 			catch (SimpleBankServiceException ex)
 			{
-				verify(repository, only()).getAccountStatement(clientID, sessionID);
+				verify(repository, times(1)).verifySession(sessionID);
+				verify(repository, times(1)).getAccountStatement(clientID);
+				verifyNoMoreInteractions(repository);
 				clearInvocations(repository);
 			}
 
-			verify(repository, times(0)).getAccountStatement(clientID, sessionID);
+			verify(repository, times(0)).verifySession(sessionID);
+			verify(repository, times(0)).getAccountStatement(clientID);
 		}
 
 		// Error handling
