@@ -13,10 +13,10 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.twinero.jtasks.nm.simplebanking.repository.beans.AccountBalance;
-import com.twinero.jtasks.nm.simplebanking.repository.beans.AccountBalanceResp;
 import com.twinero.jtasks.nm.simplebanking.repository.beans.Session;
 import com.twinero.jtasks.nm.simplebanking.repository.exception.SimpleBankServiceException;
 import com.twinero.jtasks.nm.simplebanking.service.SimpleBankService;
+import com.twinero.jtasks.nm.simplebanking.service.beans.AccountBalanceResp;
 import com.twinero.jtasks.nm.simplebanking.utils.Util;
 import com.twinero.jtasks.nm.simplebanking.web.SimpleBankingController;
 

@@ -3,7 +3,6 @@ package com.twinero.jtasks.nm.simplebanking.repository;
 import org.springframework.stereotype.Repository;
 
 import com.twinero.jtasks.nm.simplebanking.repository.beans.Sign;
-import com.twinero.jtasks.nm.simplebanking.repository.beans.SignupResp;
 import com.twinero.jtasks.nm.simplebanking.repository.exception.SimpleBankServiceException;
 
 @Repository
@@ -20,6 +19,6 @@ public interface SignupsRepository
 	 * @throws SimpleBankServiceException Object indicating a service error.
 	 */
 	// -----------------------------------------------------------------------------------------------------------------
-	public SignupResp add (Sign sign )
+	public Sign add (Sign sign )
 		throws SimpleBankServiceException;
 }

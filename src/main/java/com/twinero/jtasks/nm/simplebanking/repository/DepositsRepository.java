@@ -3,7 +3,6 @@ package com.twinero.jtasks.nm.simplebanking.repository;
 import org.springframework.stereotype.Repository;
 
 import com.twinero.jtasks.nm.simplebanking.repository.beans.Deposit;
-import com.twinero.jtasks.nm.simplebanking.repository.beans.DepositResp;
 import com.twinero.jtasks.nm.simplebanking.repository.exception.SimpleBankServiceException;
 
 @Repository
@@ -20,6 +19,6 @@ public interface DepositsRepository
 	 * @throws SimpleBankServiceException Object indicating a service error.
 	 */
 	// -----------------------------------------------------------------------------------------------------------------
-	public DepositResp add (Deposit deposit )
+	public Deposit add (Deposit deposit )
 		throws SimpleBankServiceException;
 }

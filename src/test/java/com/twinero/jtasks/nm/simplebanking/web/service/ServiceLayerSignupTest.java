@@ -19,9 +19,10 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.twinero.jtasks.nm.simplebanking.repository.SignupsRepository;
 import com.twinero.jtasks.nm.simplebanking.repository.beans.Sign;
-import com.twinero.jtasks.nm.simplebanking.repository.beans.SignupResp;
 import com.twinero.jtasks.nm.simplebanking.repository.exception.SimpleBankServiceException;
 import com.twinero.jtasks.nm.simplebanking.service.SimpleBankService;
+import com.twinero.jtasks.nm.simplebanking.service.beans.SignReq;
+import com.twinero.jtasks.nm.simplebanking.service.beans.SignupResp;
 
 @SpringBootTest
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -32,7 +33,7 @@ public class ServiceLayerSignupTest
 
 	@Autowired
 	@MockBean
-	private SignupsRepository repository;
+	private SignupsRepository signupsRepository;
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// ----------------------------------------------------------------------------------------- shouldSignupAndReturnOK
@@ -45,15 +46,23 @@ public class ServiceLayerSignupTest
 	{
 		try
 		{
-			Sign sign = new Sign("nestor.marcano@gmail.com", "123456");
-			SignupResp resp = new SignupResp(SignupResp.Status.OK);
+			String email = "nestor.marcano@gmail.com";
+			String password = "123456";
+			
+			Sign sign = new Sign(email, password);
+			
+			Sign expectedSign = new Sign(email, password);
+			expectedSign.setSignID(123);
+			
+			SignReq signReq = new SignReq(email, password);
+			
+			SignupResp expectedSignupResp = new SignupResp(SignupResp.Status.OK);
+			when(signupsRepository.add(sign)).thenReturn(expectedSign);
 
-			when(repository.add(sign)).thenReturn(resp);
+			SignupResp obtainedSignupResp = service.signup(signReq);
 
-			SignupResp respFromService = service.signup(sign);
-
-			assertThat(respFromService).isEqualTo(resp);
-			verify(repository, only()).add(sign);
+			assertThat(obtainedSignupResp).isEqualTo(expectedSignupResp);
+			verify(signupsRepository, only()).add(sign);
 		}
 
 		// Error handling
@@ -80,24 +89,26 @@ public class ServiceLayerSignupTest
 		try
 		{
 			Sign sign = new Sign();
+			SignReq signReq = new SignReq();
+			
 			try
 			{
-				service.signup(sign);
+				service.signup(signReq);
 			}
 			catch (SimpleBankServiceException ex)
 			{
-				verify(repository, times(0)).add(sign);
+				verify(signupsRepository, times(0)).add(sign);
 			}
 
-			verify(repository, times(0)).add(sign);
+			verify(signupsRepository, times(0)).add(sign);
 		}
 
 		// Error handling
 		// --------------
-		//catch (SimpleBankServiceException ex)
-		//{
-		//	assertTrue(false);
-		//}
+		catch (SimpleBankServiceException ex)
+		{
+			assertTrue(false);
+		}
 		catch (Exception ex)
 		{
 			assertTrue(false);
@@ -115,18 +126,22 @@ public class ServiceLayerSignupTest
 	{
 		try
 		{
-			Sign sign = new Sign("nestor marcano gmail.com", "123456");
-
+			String email = "nestor marcano gmail.com";
+			String password = "123456";
+			
+			Sign sign = new Sign(email, password);
+			SignReq signReq = new SignReq(email, password);
+			
 			try
 			{
-				service.signup(sign);
+				service.signup(signReq);
 			}
 			catch (SimpleBankServiceException ex)
 			{
-				verify(repository, times(0)).add(sign);
+				verify(signupsRepository, times(0)).add(sign);
 			}
 
-			verify(repository, times(0)).add(sign);
+			verify(signupsRepository, times(0)).add(sign);
 		}
 
 		// Error handling
@@ -152,15 +167,21 @@ public class ServiceLayerSignupTest
 	{
 		try
 		{
-			Sign sign = new Sign("nestor.marcano@gmail.com", "123456");
-			SignupResp resp = new SignupResp(SignupResp.Status.ALREADY_EXISTS);
+			String email = "nestor.marcano@gmail.com";
+			String password = "123456";
+			
+			Sign sign = new Sign(email, password);
+			Sign expectedSign = new Sign();
+			SignReq signReq = new SignReq(email, password);
+			
+			SignupResp expectedSignupResp = new SignupResp(SignupResp.Status.ALREADY_EXISTS);
 
-			when(repository.add(sign)).thenReturn(resp);
+			when(signupsRepository.add(sign)).thenReturn(expectedSign);
 
-			SignupResp respFromService = service.signup(sign);
+			SignupResp obtinedSignupResp = service.signup(signReq);
 
-			assertThat(respFromService).isEqualTo(resp);
-			verify(repository, only()).add(sign);
+			assertThat(obtinedSignupResp).isEqualTo(expectedSignupResp);
+			verify(signupsRepository, only()).add(sign);
 		}
 
 		// Error handling
@@ -186,21 +207,25 @@ public class ServiceLayerSignupTest
 	{
 		try
 		{
-			Sign sign = new Sign("nestor.marcano@gmail.com", "123456");
+			String email = "nestor.marcano@gmail.com";
+			String password = "123456";
+			
+			Sign sign = new Sign(email, password);
+			SignReq signReq = new SignReq(email, password);
 
-			when(repository.add(sign)).thenThrow(SimpleBankServiceException.class);
+			when(signupsRepository.add(sign)).thenThrow(SimpleBankServiceException.class);
 			
 			try
 			{
-				service.signup(sign);
+				service.signup(signReq);
 			}
 			catch (SimpleBankServiceException ex)
 			{
-				verify(repository, only()).add(sign);
-				clearInvocations(repository);
+				verify(signupsRepository, only()).add(sign);
+				clearInvocations(signupsRepository);
 			}
 
-			verify(repository, times(0)).add(sign);
+			verify(signupsRepository, times(0)).add(sign);
 		}
 
 		// Error handling

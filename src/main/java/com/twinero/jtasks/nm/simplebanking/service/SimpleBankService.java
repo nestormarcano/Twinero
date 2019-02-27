@@ -2,16 +2,17 @@ package com.twinero.jtasks.nm.simplebanking.service;
 
 import org.springframework.stereotype.Service;
 
-import com.twinero.jtasks.nm.simplebanking.repository.beans.AccountBalanceResp;
-import com.twinero.jtasks.nm.simplebanking.repository.beans.AccountStatementResp;
 import com.twinero.jtasks.nm.simplebanking.repository.beans.Deposit;
-import com.twinero.jtasks.nm.simplebanking.repository.beans.DepositResp;
 import com.twinero.jtasks.nm.simplebanking.repository.beans.Session;
 import com.twinero.jtasks.nm.simplebanking.repository.beans.Sign;
-import com.twinero.jtasks.nm.simplebanking.repository.beans.SignupResp;
 import com.twinero.jtasks.nm.simplebanking.repository.beans.Withdraw;
-import com.twinero.jtasks.nm.simplebanking.repository.beans.WithdrawResp;
 import com.twinero.jtasks.nm.simplebanking.repository.exception.SimpleBankServiceException;
+import com.twinero.jtasks.nm.simplebanking.service.beans.AccountBalanceResp;
+import com.twinero.jtasks.nm.simplebanking.service.beans.AccountStatementResp;
+import com.twinero.jtasks.nm.simplebanking.service.beans.DepositResp;
+import com.twinero.jtasks.nm.simplebanking.service.beans.SignReq;
+import com.twinero.jtasks.nm.simplebanking.service.beans.SignupResp;
+import com.twinero.jtasks.nm.simplebanking.service.beans.WithdrawResp;
 
 @Service
 public interface SimpleBankService
@@ -27,7 +28,7 @@ public interface SimpleBankService
 	 * @throws SimpleBankServiceException Object indicating a service error.
 	 */
 	// -----------------------------------------------------------------------------------------------------------------
-	public SignupResp signup (Sign sign )
+	public SignupResp signup (SignReq sign )
 		throws SimpleBankServiceException;
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -35,13 +36,13 @@ public interface SimpleBankService
 	/**
 	 * Performs a login in the system.
 	 * 
-	 * @param sign The login data.
+	 * @param session The login data.
 	 * 
 	 * @return Object with the response data.
 	 * @throws SimpleBankServiceException Object indicating a service error.
 	 */
 	// -----------------------------------------------------------------------------------------------------------------
-	public Session login (Sign sign )
+	public Session login (Session session )
 		throws SimpleBankServiceException;
 
 	// -----------------------------------------------------------------------------------------------------------------

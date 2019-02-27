@@ -18,7 +18,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.twinero.jtasks.nm.simplebanking.repository.SessionsRepository;
 import com.twinero.jtasks.nm.simplebanking.repository.beans.Session;
-import com.twinero.jtasks.nm.simplebanking.repository.beans.Sign;
 import com.twinero.jtasks.nm.simplebanking.repository.exception.SimpleBankServiceException;
 import com.twinero.jtasks.nm.simplebanking.service.SimpleBankService;
 
@@ -46,18 +45,18 @@ public class ServiceLayerSessionsTest
 		{
 			String email = "nestor.marcano@gmail.com";
 			String password = "123456";
-			Sign sign = new Sign(email, password);
+			Session session = new Session(email, password);
 			
 			long clientID = 10;
 			Session expectedSession = new Session("5dd35b40-2410-11e9-b56e-0800200c9a66");
 			expectedSession.setClientID(clientID);
 
-			when(sessionsRepository.add(sign)).thenReturn(expectedSession);
+			when(sessionsRepository.add(session)).thenReturn(expectedSession);
 
-			Session obtainedSession = service.login(sign);
+			Session obtainedSession = service.login(session);
 
 			assertThat(obtainedSession).isEqualTo(expectedSession);
-			verify(sessionsRepository, only()).add(sign);
+			verify(sessionsRepository, only()).add(session);
 		}
 
 		// Error handling
@@ -85,17 +84,17 @@ public class ServiceLayerSessionsTest
 		{
 			String email = "nestor.marcano@gmail.com";
 			String password = "123456";
-			Sign sign = new Sign(email, password);
+			Session session = new Session(email, password);
 			
 			Session expectedSession = new Session();
 			expectedSession.setSessionStatus(Session.Status.UNAUTHORIZED);
 
-			when(sessionsRepository.add(sign)).thenReturn(expectedSession);
+			when(sessionsRepository.add(session)).thenReturn(expectedSession);
 
-			Session obtainedSession = service.login(sign);
+			Session obtainedSession = service.login(session);
 
 			assertThat(obtainedSession).isEqualTo(expectedSession);
-			verify(sessionsRepository, only()).add(sign);
+			verify(sessionsRepository, only()).add(session);
 		}
 
 		// Error handling
@@ -121,17 +120,17 @@ public class ServiceLayerSessionsTest
 	{
 		try
 		{
-			Sign sign = new Sign();
+			Session session = new Session();
 			try
 			{
-				service.login(sign);
+				service.login(session);
 			}
 			catch (SimpleBankServiceException ex)
 			{
-				verify(sessionsRepository, times(0)).add(sign);
+				verify(sessionsRepository, times(0)).add(session);
 			}
 
-			verify(sessionsRepository, times(0)).add(sign);
+			verify(sessionsRepository, times(0)).add(session);
 		}
 
 		// Error handling
@@ -157,18 +156,18 @@ public class ServiceLayerSessionsTest
 	{
 		try
 		{
-			Sign sign = new Sign("nestor marcano gmail.com", "123456");
+			Session session = new Session("nestor marcano gmail.com", "123456");
 
 			try
 			{
-				service.login(sign);
+				service.login(session);
 			}
 			catch (SimpleBankServiceException ex)
 			{
-				verify(sessionsRepository, times(0)).add(sign);
+				verify(sessionsRepository, times(0)).add(session);
 			}
 
-			verify(sessionsRepository, times(0)).add(sign);
+			verify(sessionsRepository, times(0)).add(session);
 		}
 
 		// Error handling
@@ -194,21 +193,21 @@ public class ServiceLayerSessionsTest
 	{
 		try
 		{
-			Sign sign = new Sign("nestor.marcano@gmail.com", "123456");
+			Session session = new Session("nestor.marcano@gmail.com", "123456");
 
-			when(sessionsRepository.add(sign)).thenThrow(SimpleBankServiceException.class);
+			when(sessionsRepository.add(session)).thenThrow(SimpleBankServiceException.class);
 			
 			try
 			{
-				service.login(sign);
+				service.login(session);
 			}
 			catch (SimpleBankServiceException ex)
 			{
-				verify(sessionsRepository, only()).add(sign);
+				verify(sessionsRepository, only()).add(session);
 				clearInvocations(sessionsRepository);
 			}
 
-			verify(sessionsRepository, times(0)).add(sign);
+			verify(sessionsRepository, times(0)).add(session);
 		}
 
 		// Error handling

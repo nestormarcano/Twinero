@@ -19,10 +19,10 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import com.twinero.jtasks.nm.simplebanking.repository.AccountBalancesRepository;
 import com.twinero.jtasks.nm.simplebanking.repository.SessionsRepository;
 import com.twinero.jtasks.nm.simplebanking.repository.beans.AccountBalance;
-import com.twinero.jtasks.nm.simplebanking.repository.beans.AccountBalanceResp;
-import com.twinero.jtasks.nm.simplebanking.repository.beans.SesionStatus;
+import com.twinero.jtasks.nm.simplebanking.repository.beans.Session;
 import com.twinero.jtasks.nm.simplebanking.repository.exception.SimpleBankServiceException;
 import com.twinero.jtasks.nm.simplebanking.service.SimpleBankService;
+import com.twinero.jtasks.nm.simplebanking.service.beans.AccountBalanceResp;
 
 @SpringBootTest
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -52,17 +52,21 @@ public class ServiceLayerAccountBalanceTest
 		{
 			long clientID = 10;
 			String sessionID = "5dd35b40-2410-11e9-b56e-0800200c9a66";
+			
+			Session session = new Session(sessionID);
+			session.setClientID(clientID);
+			session.setSessionStatus(Session.Status.OK);
 
-			AccountBalance balance = new AccountBalance();
-			AccountBalanceResp expectedAccountBalance = new AccountBalanceResp(balance,
+			AccountBalance expectedAccountBalance = new AccountBalance();
+			AccountBalanceResp expectedAccountBalanceResp = new AccountBalanceResp(expectedAccountBalance,
 					AccountBalanceResp.Status.OK);
 
-			when(sessionsRepository.get(sessionID)).thenReturn(SesionStatus.OK);
+			when(sessionsRepository.get(sessionID)).thenReturn(session);
 			when(accountBalancesRepository.get(clientID)).thenReturn(expectedAccountBalance);
 
-			AccountBalanceResp obtainedAccountBalance = service.getAccountBalance(clientID, sessionID);
+			AccountBalanceResp obtainedAccountBalanceResp = service.getAccountBalance(clientID, sessionID);
 
-			assertThat(obtainedAccountBalance).isEqualTo(expectedAccountBalance);
+			assertThat(obtainedAccountBalanceResp).isEqualTo(expectedAccountBalanceResp);
 			verify(sessionsRepository, only()).get(sessionID);
 			verify(accountBalancesRepository, only()).get(clientID);
 		}
@@ -92,16 +96,20 @@ public class ServiceLayerAccountBalanceTest
 		{
 			long clientID = 10;
 			String sessionID = "5dd35b40-2410-11e9-b56e-0800200c9a66";
+			
+			Session session = new Session(sessionID);
+			session.setClientID(clientID);
+			session.setSessionStatus(Session.Status.EXPIRED);
 
-			AccountBalance balance = new AccountBalance();
-			AccountBalanceResp expectedAccountBalance = new AccountBalanceResp(balance,
+			AccountBalance expectedAccountBalance = new AccountBalance();
+			AccountBalanceResp expectedAccountBalanceResp = new AccountBalanceResp(expectedAccountBalance,
 					AccountBalanceResp.Status.SESSION_EXPIRED);
 
-			when(sessionsRepository.get(sessionID)).thenReturn(SesionStatus.EXPIRED);
+			when(sessionsRepository.get(sessionID)).thenReturn(session);
 
-			AccountBalanceResp obtainedAccountBalance = service.getAccountBalance(clientID, sessionID);
+			AccountBalanceResp obtainedAccountBalanceResp = service.getAccountBalance(clientID, sessionID);
 
-			assertThat(obtainedAccountBalance).isEqualTo(expectedAccountBalance);
+			assertThat(obtainedAccountBalanceResp).isEqualTo(expectedAccountBalanceResp);
 			verify(sessionsRepository, only()).get(sessionID);
 			verifyNoMoreInteractions(accountBalancesRepository);
 		}
@@ -131,16 +139,20 @@ public class ServiceLayerAccountBalanceTest
 		{
 			long clientID = 10;
 			String sessionID = "5dd35b40-2410-11e9-b56e-0800200c9a66";
+			
+			Session session = new Session(sessionID);
+			session.setClientID(clientID);
+			session.setSessionStatus(Session.Status.NOT_EXISTS);
 
-			AccountBalance balance = new AccountBalance();
-			AccountBalanceResp expectedAccountBalance = new AccountBalanceResp(balance,
+			AccountBalance expectedAccountBalance = new AccountBalance();
+			AccountBalanceResp expectedAccountBalanceResp = new AccountBalanceResp(expectedAccountBalance,
 					AccountBalanceResp.Status.SESSION_DOES_NOT_EXIST);
 
-			when(sessionsRepository.get(sessionID)).thenReturn(SesionStatus.NOT_EXISTS);
+			when(sessionsRepository.get(sessionID)).thenReturn(session);
 
-			AccountBalanceResp obtainedAccountBalance = service.getAccountBalance(clientID, sessionID);
+			AccountBalanceResp obtainedAccountBalanceResp = service.getAccountBalance(clientID, sessionID);
 
-			assertThat(obtainedAccountBalance).isEqualTo(expectedAccountBalance);
+			assertThat(obtainedAccountBalanceResp).isEqualTo(expectedAccountBalanceResp);
 			verify(sessionsRepository, only()).get(sessionID);
 			verifyNoMoreInteractions(accountBalancesRepository);
 		}
@@ -170,8 +182,12 @@ public class ServiceLayerAccountBalanceTest
 		{
 			long clientID = 10;
 			String sessionID = "5dd35b40-2410-11e9-b56e-0800200c9a66";
+			
+			Session session = new Session(sessionID);
+			session.setClientID(clientID);
+			session.setSessionStatus(Session.Status.OK);
 
-			when(sessionsRepository.get(sessionID)).thenReturn(SesionStatus.OK);
+			when(sessionsRepository.get(sessionID)).thenReturn(session);
 			when(accountBalancesRepository.get(clientID)).thenThrow(SimpleBankServiceException.class);
 
 			try

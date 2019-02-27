@@ -16,9 +16,9 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.twinero.jtasks.nm.simplebanking.repository.beans.Session;
 import com.twinero.jtasks.nm.simplebanking.repository.beans.Withdraw;
-import com.twinero.jtasks.nm.simplebanking.repository.beans.WithdrawResp;
 import com.twinero.jtasks.nm.simplebanking.repository.exception.SimpleBankServiceException;
 import com.twinero.jtasks.nm.simplebanking.service.SimpleBankService;
+import com.twinero.jtasks.nm.simplebanking.service.beans.WithdrawResp;
 import com.twinero.jtasks.nm.simplebanking.utils.Util;
 import com.twinero.jtasks.nm.simplebanking.web.SimpleBankingController;
 import com.twinero.jtasks.nm.simplebanking.web.beans.WithdrawReq;

@@ -1,23 +1,16 @@
-package com.twinero.jtasks.nm.simplebanking.repository.beans;
+package com.twinero.jtasks.nm.simplebanking.service.beans;
 
 import java.util.Objects;
 
-/**
- * Contains the signing data.<br>
- * Usually it is the data to sign-up.
- * 
- * @author Nestor Marcano
- */
-public class Sign
+public class SignReq
 {
-	private long signID;
 	private String email;
 	private String password;
 
 	/**
 	 * Default constructor.
 	 */
-	public Sign ()
+	public SignReq ()
 	{
 	}
 
@@ -27,8 +20,8 @@ public class Sign
 	 * @param email    Customer's email.
 	 * @param password Customr's password.
 	 */
-	public Sign (	String email,
-						String password )
+	public SignReq (	String email,
+							String password )
 	{
 		this.email = email;
 		this.password = password;
@@ -46,31 +39,14 @@ public class Sign
 		if ((obj == null) || !this.getClass().equals(obj.getClass()))
 		{ return false; }
 
-		final Sign other = (Sign) obj;
-		return (Objects.equals(this.email, other.email) && Objects.equals(this.password, other.password)
-				&& Objects.equals(this.signID, other.signID));
+		final SignReq other = (SignReq) obj;
+		return (Objects.equals(this.email, other.email) && Objects.equals(this.password, other.password));
 	}
 
 	@Override
 	public int hashCode ()
 	{
-		return Objects.hash(this.email, this.password, this.signID);
-	}
-
-	/**
-	 * @return the signID
-	 */
-	public long getSignID ()
-	{
-		return this.signID;
-	}
-
-	/**
-	 * @param signID the signID to set
-	 */
-	public void setSignID (long newSignID )
-	{
-		this.signID = newSignID;
+		return Objects.hash(this.email, this.password);
 	}
 
 	/**
@@ -104,4 +80,5 @@ public class Sign
 	{
 		this.password = password;
 	}
+
 }

@@ -2,7 +2,7 @@ package com.twinero.jtasks.nm.simplebanking.repository;
 
 import org.springframework.stereotype.Repository;
 
-import com.twinero.jtasks.nm.simplebanking.repository.beans.AccountStatementResp;
+import com.twinero.jtasks.nm.simplebanking.repository.beans.AccountStatement;
 import com.twinero.jtasks.nm.simplebanking.repository.exception.SimpleBankServiceException;
 
 @Repository
@@ -19,6 +19,6 @@ public interface AccountStatementsRepository
 	 * @throws SimpleBankServiceException Object indicating a service error.
 	 */
 	// -----------------------------------------------------------------------------------------------------------------
-	public AccountStatementResp get (long clientID )
+	public AccountStatement get (long clientID )
 		throws SimpleBankServiceException;
 }

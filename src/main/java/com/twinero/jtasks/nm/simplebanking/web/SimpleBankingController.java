@@ -14,18 +14,18 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.twinero.jtasks.nm.simplebanking.repository.beans.AccountBalance;
-import com.twinero.jtasks.nm.simplebanking.repository.beans.AccountBalanceResp;
 import com.twinero.jtasks.nm.simplebanking.repository.beans.AccountStatement;
-import com.twinero.jtasks.nm.simplebanking.repository.beans.AccountStatementResp;
 import com.twinero.jtasks.nm.simplebanking.repository.beans.Deposit;
-import com.twinero.jtasks.nm.simplebanking.repository.beans.DepositResp;
 import com.twinero.jtasks.nm.simplebanking.repository.beans.Session;
-import com.twinero.jtasks.nm.simplebanking.repository.beans.Sign;
-import com.twinero.jtasks.nm.simplebanking.repository.beans.SignupResp;
 import com.twinero.jtasks.nm.simplebanking.repository.beans.Withdraw;
-import com.twinero.jtasks.nm.simplebanking.repository.beans.WithdrawResp;
 import com.twinero.jtasks.nm.simplebanking.repository.exception.SimpleBankServiceException;
 import com.twinero.jtasks.nm.simplebanking.service.SimpleBankService;
+import com.twinero.jtasks.nm.simplebanking.service.beans.AccountBalanceResp;
+import com.twinero.jtasks.nm.simplebanking.service.beans.AccountStatementResp;
+import com.twinero.jtasks.nm.simplebanking.service.beans.DepositResp;
+import com.twinero.jtasks.nm.simplebanking.service.beans.SignReq;
+import com.twinero.jtasks.nm.simplebanking.service.beans.SignupResp;
+import com.twinero.jtasks.nm.simplebanking.service.beans.WithdrawResp;
 import com.twinero.jtasks.nm.simplebanking.utils.Util;
 import com.twinero.jtasks.nm.simplebanking.web.beans.DepositReq;
 import com.twinero.jtasks.nm.simplebanking.web.beans.WithdrawReq;
@@ -47,21 +47,21 @@ public class SimpleBankingController
 	/**
 	 * Performs a new sign up in the system.
 	 * 
-	 * @param sign A Sign object with the signup's data.
+	 * @param signReq A Sign object with the signup's data.
 	 * @return An object with the new sign up just created.
 	 */
 	// -----------------------------------------------------------------------------------------------------------------
 	@PostMapping(	path = "/signups", consumes = MediaType.APPLICATION_JSON_VALUE,
 						produces = MediaType.APPLICATION_JSON_VALUE)
-	public @ResponseBody ResponseEntity<String> signup (@RequestBody(required = true) Sign sign )
+	public @ResponseBody ResponseEntity<String> signup (@RequestBody(required = true) SignReq signReq )
 	{
 		try
 		{
-			if (!Util.checksEmailFormat(sign.getEmail()))
+			if (!Util.checksEmailFormat(signReq.getEmail()))
 				return new ResponseEntity<String>(Util.asJsonString(new SignupResp(SignupResp.Status.BAD_REQUEST)),
 						HttpStatus.BAD_REQUEST);
 
-			SignupResp signup = service.signup(sign);
+			SignupResp signup = service.signup(signReq);
 
 			if (signup.getStatus() == SignupResp.Status.ALREADY_EXISTS)
 				return new ResponseEntity<String>(Util.asJsonString(signup), HttpStatus.CONFLICT);
@@ -89,14 +89,14 @@ public class SimpleBankingController
 	// ----------------------------------------------------------------------------------------------------------------
 	@PostMapping(	path = "/sessions", consumes = MediaType.APPLICATION_JSON_VALUE,
 						produces = MediaType.APPLICATION_JSON_VALUE)
-	public @ResponseBody ResponseEntity<String> login (@RequestBody(required = true) Sign sign )
+	public @ResponseBody ResponseEntity<String> login (@RequestBody(required = true) Session session )
 	{
 		try
 		{
-			if (!Util.checksEmailFormat(sign.getEmail()))
+			if (!Util.checksEmailFormat(session.getEmail()))
 				return new ResponseEntity<String>(Util.asJsonString(new Session()), HttpStatus.BAD_REQUEST);
 
-			Session session = service.login(sign);
+			session = service.login(session);
 
 			if (session.getSessionID() == null)
 				return new ResponseEntity<String>(Util.asJsonString(session), HttpStatus.UNAUTHORIZED);
@@ -108,7 +108,7 @@ public class SimpleBankingController
 		// --------------
 		catch (SimpleBankServiceException ex)
 		{
-			Session session = new Session();
+			session = new Session();
 			return new ResponseEntity<String>(Util.asJsonString(session), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}

@@ -15,7 +15,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.twinero.jtasks.nm.simplebanking.repository.beans.Session;
-import com.twinero.jtasks.nm.simplebanking.repository.beans.Sign;
 import com.twinero.jtasks.nm.simplebanking.repository.exception.SimpleBankServiceException;
 import com.twinero.jtasks.nm.simplebanking.service.SimpleBankService;
 import com.twinero.jtasks.nm.simplebanking.utils.Util;
@@ -58,19 +57,21 @@ public class WebLayerSessionsTest
 	{
 		String email = "nestor.marcano@gmail.com";
 		String password = "123456";
-		Sign sign = new Sign(email, password);
+		Session session = new Session(email, password);
 
 		long clientID = 10;
 		Session expectedSession = new Session("5dd35b40-2410-11e9-b56e-0800200c9a66");
 		expectedSession.setClientID(clientID);
+		expectedSession.setEmail(email);
+		expectedSession.setPassword("*****");
 		expectedSession.setSessionStatus(Session.Status.OK);
 		
-		when(service.login(sign)).thenReturn(expectedSession);
+		when(service.login(session)).thenReturn(expectedSession);
 
 		this.mockMvc
 				.perform(post("/simpleBanking/sessions")
 						.contentType(MediaType.APPLICATION_JSON)
-						.content(Util.asJsonString(sign))
+						.content(Util.asJsonString(session))
 						.characterEncoding("UTF-8"))
 				.andDo(print())
 				.andExpect(status().isCreated())
@@ -79,7 +80,7 @@ public class WebLayerSessionsTest
 				.andDo(document("sessions/login"))
 				.andReturn();
 		
-		verify(service, only()).login(sign);
+		verify(service, only()).login(session);
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -96,17 +97,17 @@ public class WebLayerSessionsTest
 	{
 		String email = "pedro.marcano@gmail.com";
 		String password = "123456";
-		Sign sign = new Sign(email, password);
+		Session session = new Session(email, password);
 		
 		Session expectedSession = new Session();
 		expectedSession.setSessionStatus(Session.Status.UNAUTHORIZED);
 		
-		when(service.login(sign)).thenReturn(expectedSession);
+		when(service.login(session)).thenReturn(expectedSession);
 
 		this.mockMvc
 				.perform(post("/simpleBanking/sessions")
 						.contentType(MediaType.APPLICATION_JSON)
-						.content(Util.asJsonString(sign))
+						.content(Util.asJsonString(session))
 						.characterEncoding("UTF-8"))
 				.andDo(print())
 				.andExpect(status().isUnauthorized())
@@ -115,7 +116,7 @@ public class WebLayerSessionsTest
 				.andDo(document("sessions/notLogin"))
 				.andReturn();
 		
-		verify(service, only()).login(sign);
+		verify(service, only()).login(session);
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -133,13 +134,13 @@ public class WebLayerSessionsTest
 		String email = "nestor marcano gmail.com";
 		String password = "123 456";
 		
-		Sign sign = new Sign(email, password);
+		Session session = new Session(email, password);
 		Session expectedSession = new Session();
 
 		this.mockMvc
 				.perform(post("/simpleBanking/sessions")
 						.contentType(MediaType.APPLICATION_JSON)
-						.content(Util.asJsonString(sign))
+						.content(Util.asJsonString(session))
 						.characterEncoding("UTF-8"))
 				.andDo(print())
 				.andExpect(status().isBadRequest())
@@ -148,7 +149,7 @@ public class WebLayerSessionsTest
 				.andDo(document("sessions/notLoginMalformedEmail"))
 				.andReturn();
 		
-		verify(service, times(0)).login(sign);
+		verify(service, times(0)).login(session);
 	}
 	
 	// -----------------------------------------------------------------------------------------------------------------
@@ -165,15 +166,15 @@ public class WebLayerSessionsTest
 		String email = "nestor.marcano@gmail.com";
 		String password = "123456";
 		
-		Sign sign = new Sign(email, password);
+		Session session = new Session(email, password);
 		Session expectedSession = new Session();
 		
-		when(service.login(sign)).thenThrow(SimpleBankServiceException.class);
+		when(service.login(session)).thenThrow(SimpleBankServiceException.class);
 
 		this.mockMvc
 				.perform(post("/simpleBanking/sessions")
 						.contentType(MediaType.APPLICATION_JSON)
-						.content(Util.asJsonString(sign))
+						.content(Util.asJsonString(session))
 						.characterEncoding("UTF-8"))
 				.andDo(print())
 				.andExpect(status().is5xxServerError())
@@ -182,6 +183,6 @@ public class WebLayerSessionsTest
 				.andDo(document("sessions/notLoginServerError"))
 				.andReturn();
 		
-		verify(service, only()).login(sign);
+		verify(service, only()).login(session);
 	}
 }

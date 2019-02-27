@@ -14,10 +14,10 @@ import org.springframework.http.MediaType;
 
 import org.springframework.test.web.servlet.MockMvc;
 
-import com.twinero.jtasks.nm.simplebanking.repository.beans.Sign;
-import com.twinero.jtasks.nm.simplebanking.repository.beans.SignupResp;
 import com.twinero.jtasks.nm.simplebanking.repository.exception.SimpleBankServiceException;
 import com.twinero.jtasks.nm.simplebanking.service.SimpleBankService;
+import com.twinero.jtasks.nm.simplebanking.service.beans.SignReq;
+import com.twinero.jtasks.nm.simplebanking.service.beans.SignupResp;
 import com.twinero.jtasks.nm.simplebanking.utils.Util;
 import com.twinero.jtasks.nm.simplebanking.web.SimpleBankingController;
 
@@ -58,16 +58,17 @@ public class WebLayerSignupsTest
 	{
 		String email = "nestor.marcano@gmail.com";
 		String password = "123456";
-		Sign sign = new Sign(email, password);
-
+		
+		SignReq signReq = new SignReq(email, password);
+		
 		SignupResp signup = new SignupResp(SignupResp.Status.OK);
-		when(service.signup(sign)).thenReturn(signup);
+		when(service.signup(signReq)).thenReturn(signup);
 
 		this.mockMvc
 				.perform(
 						post("/simpleBanking/signups")
 								.contentType(MediaType.APPLICATION_JSON)
-								.content(Util.asJsonString(sign))
+								.content(Util.asJsonString(signReq))
 								.characterEncoding("UTF-8"))
 				.andDo(print())
 				.andExpect(status().isCreated())
@@ -76,7 +77,7 @@ public class WebLayerSignupsTest
 				.andDo(document("signups/signup"))
 				.andReturn();
 		
-		verify(service, only()).signup(sign);
+		verify(service, only()).signup(signReq);
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -92,15 +93,15 @@ public class WebLayerSignupsTest
 	{
 		String email = "pedro.marcano@gmail.com";
 		String password = "123456";
-		Sign sign = new Sign(email, password);
+		SignReq signReq = new SignReq(email, password);
 
 		SignupResp signup = new SignupResp(SignupResp.Status.ALREADY_EXISTS);
-		when(service.signup(sign)).thenReturn(signup);
+		when(service.signup(signReq)).thenReturn(signup);
 
 		this.mockMvc
 				.perform(post("/simpleBanking/signups")
 						.contentType(MediaType.APPLICATION_JSON)
-						.content(Util.asJsonString(sign))
+						.content(Util.asJsonString(signReq))
 						.characterEncoding("UTF-8"))
 				.andDo(print())
 				.andExpect(status().isConflict())
@@ -109,7 +110,7 @@ public class WebLayerSignupsTest
 				.andDo(document("signups/notSignup"))
 				.andReturn();
 		
-		verify(service, only()).signup(sign);
+		verify(service, only()).signup(signReq);
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -126,15 +127,15 @@ public class WebLayerSignupsTest
 	{
 		String email = "nestor marcano gmail.com";
 		String password = "123 456";
-		Sign sign = new Sign(email, password);
+		SignReq signReq = new SignReq(email, password);
 
 		SignupResp signup = new SignupResp(SignupResp.Status.BAD_REQUEST);
-		when(service.signup(sign)).thenReturn(signup);
+		when(service.signup(signReq)).thenReturn(signup);
 		
 		this.mockMvc
 				.perform(post("/simpleBanking/signups")
 						.contentType(MediaType.APPLICATION_JSON)
-						.content(Util.asJsonString(sign))
+						.content(Util.asJsonString(signReq))
 						.characterEncoding("UTF-8"))
 				.andDo(print())
 				.andExpect(status().isBadRequest())
@@ -143,7 +144,7 @@ public class WebLayerSignupsTest
 				.andDo(document("signups/notSignupMalformedEmail"))
 				.andReturn();
 		
-		verify(service, times(0)).signup(sign);
+		verify(service, times(0)).signup(signReq);
 	}
 	
 	// -----------------------------------------------------------------------------------------------------------------
@@ -160,15 +161,15 @@ public class WebLayerSignupsTest
 	{
 		String email = "nestor.marcano@gmail.com";
 		String password = "123456";
-		Sign sign = new Sign(email, password);
+		SignReq signReq = new SignReq(email, password);
 
 		SignupResp signup = new SignupResp(SignupResp.Status.SERVER_ERROR);
-		when(service.signup(sign)).thenThrow(SimpleBankServiceException.class);
+		when(service.signup(signReq)).thenThrow(SimpleBankServiceException.class);
 
 		this.mockMvc
 				.perform(post("/simpleBanking/signups")
 						.contentType(MediaType.APPLICATION_JSON)
-						.content(Util.asJsonString(sign))
+						.content(Util.asJsonString(signReq))
 						.characterEncoding("UTF-8"))
 				.andDo(print())
 				.andExpect(status().is5xxServerError())
@@ -177,6 +178,6 @@ public class WebLayerSignupsTest
 				.andDo(document("signups/notSignupServerError"))
 				.andReturn();
 		
-		verify(service, only()).signup(sign);
+		verify(service, only()).signup(signReq);
 	}
 }

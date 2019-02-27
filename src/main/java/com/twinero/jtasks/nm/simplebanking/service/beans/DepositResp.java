@@ -1,12 +1,14 @@
-package com.twinero.jtasks.nm.simplebanking.repository.beans;
+package com.twinero.jtasks.nm.simplebanking.service.beans;
 
 import java.util.Objects;
+
+import com.twinero.jtasks.nm.simplebanking.repository.beans.Deposit;
 
 public class DepositResp
 {
 	public static enum Status
 	{
-		OK, SESSION_EXPIRED, SESSION_DOES_NOT_EXIST, INVALID_CLIENT, SERVER_ERROR;
+		OK, SESSION_EXPIRED, SESSION_DOES_NOT_EXIST, INVALID_CLIENT, SERVER_ERROR, UNAUTHORIZED;
 	}
 
 	private Status status;

@@ -19,11 +19,10 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import com.twinero.jtasks.nm.simplebanking.repository.DepositsRepository;
 import com.twinero.jtasks.nm.simplebanking.repository.SessionsRepository;
 import com.twinero.jtasks.nm.simplebanking.repository.beans.Deposit;
-import com.twinero.jtasks.nm.simplebanking.repository.beans.DepositResp;
-import com.twinero.jtasks.nm.simplebanking.repository.beans.SesionStatus;
 import com.twinero.jtasks.nm.simplebanking.repository.beans.Session;
 import com.twinero.jtasks.nm.simplebanking.repository.exception.SimpleBankServiceException;
 import com.twinero.jtasks.nm.simplebanking.service.SimpleBankService;
+import com.twinero.jtasks.nm.simplebanking.service.beans.DepositResp;
 
 @SpringBootTest
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -54,15 +53,17 @@ public class ServiceLayerDepositTest
 			long clientID = 10;
 			Session session = new Session("5dd35b40-2410-11e9-b56e-0800200c9a66");
 			session.setClientID(clientID);
+			session.setSessionStatus(Session.Status.OK);
 
 			Deposit deposit = new Deposit();
 			deposit.setClientID(session.getClientID());
 
-			Deposit depositForResp = new Deposit(123);
-			DepositResp expectedDepositReps = new DepositResp(depositForResp, DepositResp.Status.OK);
+			Deposit expectedDeposit = new Deposit(123);
+			expectedDeposit.setClientID(session.getClientID());
+			DepositResp expectedDepositReps = new DepositResp(expectedDeposit, DepositResp.Status.OK);
 
-			when(sessionsRepository.get(session.getSessionID())).thenReturn(SesionStatus.OK);
-			when(depositsRepository.add(deposit)).thenReturn(expectedDepositReps);
+			when(sessionsRepository.get(session.getSessionID())).thenReturn(session);
+			when(depositsRepository.add(deposit)).thenReturn(expectedDeposit);
 
 			DepositResp obtainedDepositResp = service.doDeposit(deposit, session.getSessionID());
 
@@ -98,15 +99,16 @@ public class ServiceLayerDepositTest
 			long clientID = 10;
 			Session session = new Session("5dd35b40-2410-11e9-b56e-0800200c9a66");
 			session.setClientID(clientID);
+			session.setSessionStatus(Session.Status.OK);
 
 			Deposit deposit = new Deposit();
 			deposit.setClientID(session.getClientID());
 
-			Deposit depositForResp = new Deposit(123);
-			DepositResp expectedDepositReps = new DepositResp(depositForResp, DepositResp.Status.INVALID_CLIENT);
+			Deposit expectedDeposit = new Deposit();
+			DepositResp expectedDepositReps = new DepositResp(expectedDeposit, DepositResp.Status.INVALID_CLIENT);
 
-			when(sessionsRepository.get(session.getSessionID())).thenReturn(SesionStatus.OK);
-			when(depositsRepository.add(deposit)).thenReturn(expectedDepositReps);
+			when(sessionsRepository.get(session.getSessionID())).thenReturn(session);
+			when(depositsRepository.add(deposit)).thenReturn(expectedDeposit);
 
 			DepositResp obtainedDepositResp = service.doDeposit(deposit, session.getSessionID());
 
@@ -142,14 +144,15 @@ public class ServiceLayerDepositTest
 			long clientID = 10;
 			Session session = new Session("5dd35b40-2410-11e9-b56e-0800200c9a66");
 			session.setClientID(clientID);
+			session.setSessionStatus(Session.Status.EXPIRED);
 
 			Deposit deposit = new Deposit(123);
-			deposit.setClientID(session.getClientID());
+			deposit.setClientID(clientID);
 
 			Deposit expectedDeposit = new Deposit();
 			DepositResp expectedDepositResp = new DepositResp(expectedDeposit, DepositResp.Status.SESSION_EXPIRED);
 
-			when(sessionsRepository.get(session.getSessionID())).thenReturn(SesionStatus.EXPIRED);
+			when(sessionsRepository.get(session.getSessionID())).thenReturn(session);
 
 			DepositResp obtainedDepositResp = service.doDeposit(deposit, session.getSessionID());
 
@@ -185,14 +188,15 @@ public class ServiceLayerDepositTest
 			long clientID = 10;
 			Session session = new Session("5dd35b40-2410-11e9-b56e-0800200c9a66");
 			session.setClientID(clientID);
+			session.setSessionStatus(Session.Status.NOT_EXISTS);
 
 			Deposit deposit = new Deposit();
-			deposit.setClientID(session.getClientID());
+			deposit.setClientID(clientID);
 
 			Deposit expectedDeposit = new Deposit();
 			DepositResp expectedDepositResp = new DepositResp(expectedDeposit, DepositResp.Status.SESSION_DOES_NOT_EXIST);
 
-			when(sessionsRepository.get(session.getSessionID())).thenReturn(SesionStatus.NOT_EXISTS);
+			when(sessionsRepository.get(session.getSessionID())).thenReturn(session);
 
 			DepositResp obtainedDepositResp = service.doDeposit(deposit, session.getSessionID());
 
@@ -228,11 +232,12 @@ public class ServiceLayerDepositTest
 			long clientID = 10;
 			Session session = new Session("5dd35b40-2410-11e9-b56e-0800200c9a66");
 			session.setClientID(clientID);
+			session.setSessionStatus(Session.Status.OK);
 
 			Deposit deposit = new Deposit();
-			deposit.setClientID(session.getClientID());
+			deposit.setClientID(clientID);
 
-			when(sessionsRepository.get(session.getSessionID())).thenReturn(SesionStatus.OK);
+			when(sessionsRepository.get(session.getSessionID())).thenReturn(session);
 			when(depositsRepository.add(deposit)).thenThrow(SimpleBankServiceException.class);
 
 			try

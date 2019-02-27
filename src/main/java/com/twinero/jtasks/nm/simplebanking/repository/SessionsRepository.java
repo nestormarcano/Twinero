@@ -2,9 +2,7 @@ package com.twinero.jtasks.nm.simplebanking.repository;
 
 import org.springframework.stereotype.Repository;
 
-import com.twinero.jtasks.nm.simplebanking.repository.beans.SesionStatus;
 import com.twinero.jtasks.nm.simplebanking.repository.beans.Session;
-import com.twinero.jtasks.nm.simplebanking.repository.beans.Sign;
 import com.twinero.jtasks.nm.simplebanking.repository.exception.SimpleBankServiceException;
 
 @Repository
@@ -21,7 +19,7 @@ public interface SessionsRepository
 	 * @throws SimpleBankServiceException Object indicating a service error.
 	 */
 	// -----------------------------------------------------------------------------------------------------------------
-	public SesionStatus get (String sessionID )
+	public Session get (String sessionID )
 		throws SimpleBankServiceException;
 	
 	// -----------------------------------------------------------------------------------------------------------------
@@ -29,12 +27,12 @@ public interface SessionsRepository
 	/**
 	 * Adds a login in the system.
 	 * 
-	 * @param sign The login data.
+	 * @param session The login data.
 	 * 
 	 * @return Object with the response data.
 	 * @throws SimpleBankServiceException Object indicating a service error.
 	 */
 	// -----------------------------------------------------------------------------------------------------------------
-	public Session add (Sign sign )
+	public Session add (Session session )
 		throws SimpleBankServiceException;
 }

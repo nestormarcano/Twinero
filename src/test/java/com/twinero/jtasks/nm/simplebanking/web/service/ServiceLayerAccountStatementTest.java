@@ -19,10 +19,10 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import com.twinero.jtasks.nm.simplebanking.repository.AccountStatementsRepository;
 import com.twinero.jtasks.nm.simplebanking.repository.SessionsRepository;
 import com.twinero.jtasks.nm.simplebanking.repository.beans.AccountStatement;
-import com.twinero.jtasks.nm.simplebanking.repository.beans.AccountStatementResp;
-import com.twinero.jtasks.nm.simplebanking.repository.beans.SesionStatus;
+import com.twinero.jtasks.nm.simplebanking.repository.beans.Session;
 import com.twinero.jtasks.nm.simplebanking.repository.exception.SimpleBankServiceException;
 import com.twinero.jtasks.nm.simplebanking.service.SimpleBankService;
+import com.twinero.jtasks.nm.simplebanking.service.beans.AccountStatementResp;
 
 @SpringBootTest
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -52,17 +52,21 @@ public class ServiceLayerAccountStatementTest
 		{
 			long clientID = 10;
 			String sessionID = "5dd35b40-2410-11e9-b56e-0800200c9a66";
+			
+			Session session = new Session(sessionID);
+			session.setClientID(clientID);
+			session.setSessionStatus(Session.Status.OK);
 
-			AccountStatement statement = new AccountStatement();
-			AccountStatementResp expectedAccountStatement = new AccountStatementResp(statement,
+			AccountStatement expectedAccountStatement = new AccountStatement();
+			AccountStatementResp expectedAccountStatementResp = new AccountStatementResp(expectedAccountStatement,
 					AccountStatementResp.Status.OK);
 
-			when(sessionsRepository.get(sessionID)).thenReturn(SesionStatus.OK);
+			when(sessionsRepository.get(sessionID)).thenReturn(session);
 			when(accountStatementsRepository.get(clientID)).thenReturn(expectedAccountStatement);
 
-			AccountStatementResp obtainedAccountStatement = service.getAccountStatement(clientID, sessionID);
+			AccountStatementResp obtainedAccountStatementResp = service.getAccountStatement(clientID, sessionID);
 
-			assertThat(obtainedAccountStatement).isEqualTo(expectedAccountStatement);
+			assertThat(obtainedAccountStatementResp).isEqualTo(expectedAccountStatementResp);
 			verify(sessionsRepository, only()).get(sessionID);
 			verify(accountStatementsRepository, only()).get(clientID);
 		}
@@ -92,16 +96,20 @@ public class ServiceLayerAccountStatementTest
 		{
 			long clientID = 10;
 			String sessionID = "5dd35b40-2410-11e9-b56e-0800200c9a66";
+			
+			Session session = new Session(sessionID);
+			session.setClientID(clientID);
+			session.setSessionStatus(Session.Status.EXPIRED);
 
-			AccountStatement statement = new AccountStatement();
-			AccountStatementResp expectedAccountStatement = new AccountStatementResp(statement,
+			AccountStatement expectedAccountStatement = new AccountStatement();
+			AccountStatementResp expectedAccountStatementResp = new AccountStatementResp(expectedAccountStatement,
 					AccountStatementResp.Status.SESSION_EXPIRED);
 
-			when(sessionsRepository.get(sessionID)).thenReturn(SesionStatus.EXPIRED);
+			when(sessionsRepository.get(sessionID)).thenReturn(session);
 
-			AccountStatementResp obtainedAccountStatement = service.getAccountStatement(clientID, sessionID);
+			AccountStatementResp obtainedAccountStatementResp = service.getAccountStatement(clientID, sessionID);
 
-			assertThat(obtainedAccountStatement).isEqualTo(expectedAccountStatement);
+			assertThat(obtainedAccountStatementResp).isEqualTo(expectedAccountStatementResp);
 			verify(sessionsRepository, only()).get(sessionID);
 			verifyNoMoreInteractions(accountStatementsRepository);
 		}
@@ -131,16 +139,20 @@ public class ServiceLayerAccountStatementTest
 		{
 			long clientID = 10;
 			String sessionID = "5dd35b40-2410-11e9-b56e-0800200c9a66";
+			
+			Session session = new Session(sessionID);
+			session.setClientID(clientID);
+			session.setSessionStatus(Session.Status.NOT_EXISTS);
 
-			AccountStatement statement = new AccountStatement();
-			AccountStatementResp expectedAccountStatement = new AccountStatementResp(statement,
+			AccountStatement expectedAccountStatement = new AccountStatement();
+			AccountStatementResp expectedAccountStatementResp = new AccountStatementResp(expectedAccountStatement,
 					AccountStatementResp.Status.SESSION_DOES_NOT_EXIST);
 
-			when(sessionsRepository.get(sessionID)).thenReturn(SesionStatus.NOT_EXISTS);
+			when(sessionsRepository.get(sessionID)).thenReturn(session);
 
-			AccountStatementResp obtainedAccountStatement = service.getAccountStatement(clientID, sessionID);
+			AccountStatementResp obtainedAccountStatementResp = service.getAccountStatement(clientID, sessionID);
 
-			assertThat(obtainedAccountStatement).isEqualTo(expectedAccountStatement);
+			assertThat(obtainedAccountStatementResp).isEqualTo(expectedAccountStatementResp);
 			verify(sessionsRepository, only()).get(sessionID);
 			verifyNoMoreInteractions(accountStatementsRepository);
 		}
@@ -170,8 +182,12 @@ public class ServiceLayerAccountStatementTest
 		{
 			long clientID = 10;
 			String sessionID = "5dd35b40-2410-11e9-b56e-0800200c9a66";
+			
+			Session session = new Session(sessionID);
+			session.setClientID(clientID);
+			session.setSessionStatus(Session.Status.OK);
 
-			when(sessionsRepository.get(sessionID)).thenReturn(SesionStatus.OK);
+			when(sessionsRepository.get(sessionID)).thenReturn(session);
 			when(accountStatementsRepository.get(clientID)).thenThrow(SimpleBankServiceException.class);
 
 			try

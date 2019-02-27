@@ -10,18 +10,18 @@ import com.twinero.jtasks.nm.simplebanking.repository.SessionsRepository;
 import com.twinero.jtasks.nm.simplebanking.repository.SignupsRepository;
 import com.twinero.jtasks.nm.simplebanking.repository.WithdrawsRepository;
 import com.twinero.jtasks.nm.simplebanking.repository.beans.AccountBalance;
-import com.twinero.jtasks.nm.simplebanking.repository.beans.AccountBalanceResp;
 import com.twinero.jtasks.nm.simplebanking.repository.beans.AccountStatement;
-import com.twinero.jtasks.nm.simplebanking.repository.beans.AccountStatementResp;
 import com.twinero.jtasks.nm.simplebanking.repository.beans.Deposit;
-import com.twinero.jtasks.nm.simplebanking.repository.beans.DepositResp;
-import com.twinero.jtasks.nm.simplebanking.repository.beans.SesionStatus;
 import com.twinero.jtasks.nm.simplebanking.repository.beans.Session;
 import com.twinero.jtasks.nm.simplebanking.repository.beans.Sign;
-import com.twinero.jtasks.nm.simplebanking.repository.beans.SignupResp;
 import com.twinero.jtasks.nm.simplebanking.repository.beans.Withdraw;
-import com.twinero.jtasks.nm.simplebanking.repository.beans.WithdrawResp;
 import com.twinero.jtasks.nm.simplebanking.repository.exception.SimpleBankServiceException;
+import com.twinero.jtasks.nm.simplebanking.service.beans.AccountBalanceResp;
+import com.twinero.jtasks.nm.simplebanking.service.beans.AccountStatementResp;
+import com.twinero.jtasks.nm.simplebanking.service.beans.DepositResp;
+import com.twinero.jtasks.nm.simplebanking.service.beans.SignReq;
+import com.twinero.jtasks.nm.simplebanking.service.beans.SignupResp;
+import com.twinero.jtasks.nm.simplebanking.service.beans.WithdrawResp;
 import com.twinero.jtasks.nm.simplebanking.utils.Util;
 
 @Service
@@ -80,14 +80,21 @@ public class SimpleBankServiceImpl implements SimpleBankService
 	 */
 	// -----------------------------------------------------------------------------------------------------------------
 	@Override
-	public SignupResp signup (Sign sign )
+	public SignupResp signup (SignReq signReq )
 		throws SimpleBankServiceException
 	{
-		if (sign.getEmail() == null || !Util.checksEmailFormat(sign.getEmail())
-				|| sign.getPassword() == null || sign.getPassword().isEmpty())
+		if (signReq.getEmail() == null || !Util.checksEmailFormat(signReq.getEmail())
+				|| signReq.getPassword() == null || signReq.getPassword().isEmpty())
 		{ throw new SimpleBankServiceException(); }
 
-		return signupsRepository.add(sign);
+		Sign sign = new Sign(signReq.getEmail(), signReq.getPassword());
+		
+		sign = signupsRepository.add(sign);
+		
+		if (sign.getSignID() == 0)
+			return new SignupResp(SignupResp.Status.ALREADY_EXISTS);
+		
+		return new SignupResp(SignupResp.Status.OK);
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -97,14 +104,14 @@ public class SimpleBankServiceImpl implements SimpleBankService
 	 */
 	// -----------------------------------------------------------------------------------------------------------------
 	@Override
-	public Session login (Sign sign )
+	public Session login (Session session )
 		throws SimpleBankServiceException
 	{
-		if (sign.getEmail() == null || !Util.checksEmailFormat(sign.getEmail())
-				|| sign.getPassword() == null || sign.getPassword().isEmpty())
+		if (session.getEmail() == null || !Util.checksEmailFormat(session.getEmail())
+				|| session.getPassword() == null || session.getPassword().isEmpty())
 		{ throw new SimpleBankServiceException(); }
 
-		return sessionsRepository.add(sign);
+		return sessionsRepository.add(session);
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -118,11 +125,12 @@ public class SimpleBankServiceImpl implements SimpleBankService
 																String sessionID )
 		throws SimpleBankServiceException
 	{
-		SesionStatus estatus = sessionsRepository.get(sessionID);
-		switch (estatus)
+		Session estatus = sessionsRepository.get(sessionID);
+		switch (estatus.getSessionStatus())
 		{
 			case OK:
-				return accountBalancesRepository.get(clientID);
+				AccountBalance account = accountBalancesRepository.get(clientID);
+				return new AccountBalanceResp(account, AccountBalanceResp.Status.OK);
 
 			case EXPIRED:
 				return new AccountBalanceResp(new AccountBalance(), AccountBalanceResp.Status.SESSION_EXPIRED);
@@ -132,6 +140,9 @@ public class SimpleBankServiceImpl implements SimpleBankService
 
 			case INTERNAL_ERROR:
 				return new AccountBalanceResp(new AccountBalance(), AccountBalanceResp.Status.SERVER_ERROR);
+				
+			case UNAUTHORIZED:
+				return new AccountBalanceResp(new AccountBalance(), AccountBalanceResp.Status.UNAUTHORIZED);
 
 			default:
 				throw new SimpleBankServiceException();
@@ -149,11 +160,12 @@ public class SimpleBankServiceImpl implements SimpleBankService
 																		String sessionID )
 		throws SimpleBankServiceException
 	{
-		SesionStatus estatus = sessionsRepository.get(sessionID);
-		switch (estatus)
+		Session estatus = sessionsRepository.get(sessionID);
+		switch (estatus.getSessionStatus())
 		{
 			case OK:
-				return accountStatementsRepository.get(clientID);
+				AccountStatement account = accountStatementsRepository.get(clientID);
+				return new AccountStatementResp(account, AccountStatementResp.Status.OK);
 
 			case EXPIRED:
 				return new AccountStatementResp(new AccountStatement(), AccountStatementResp.Status.SESSION_EXPIRED);
@@ -163,6 +175,9 @@ public class SimpleBankServiceImpl implements SimpleBankService
 
 			case INTERNAL_ERROR:
 				return new AccountStatementResp(new AccountStatement(), AccountStatementResp.Status.SERVER_ERROR);
+				
+			case UNAUTHORIZED:
+				return new AccountStatementResp(new AccountStatement(), AccountStatementResp.Status.UNAUTHORIZED);
 
 			default:
 				throw new SimpleBankServiceException();
@@ -180,11 +195,15 @@ public class SimpleBankServiceImpl implements SimpleBankService
 											String sessionID )
 		throws SimpleBankServiceException
 	{
-		SesionStatus estatus = sessionsRepository.get(sessionID);
-		switch (estatus)
+		Session estatus = sessionsRepository.get(sessionID);
+		switch (estatus.getSessionStatus())
 		{
 			case OK:
-				return depositsRepository.add(deposit);
+				deposit = depositsRepository.add(deposit);
+				if (deposit.getClientID() == 0)
+					return new DepositResp(deposit, DepositResp.Status.INVALID_CLIENT);
+				
+				return new DepositResp(deposit, DepositResp.Status.OK);
 
 			case EXPIRED:
 				return new DepositResp(new Deposit(), DepositResp.Status.SESSION_EXPIRED);
@@ -194,6 +213,9 @@ public class SimpleBankServiceImpl implements SimpleBankService
 
 			case INTERNAL_ERROR:
 				return new DepositResp(new Deposit(), DepositResp.Status.SERVER_ERROR);
+				
+			case UNAUTHORIZED:
+				return new DepositResp(new Deposit(), DepositResp.Status.UNAUTHORIZED);
 
 			default:
 				throw new SimpleBankServiceException();
@@ -211,11 +233,15 @@ public class SimpleBankServiceImpl implements SimpleBankService
 												String sessionID )
 		throws SimpleBankServiceException
 	{
-		SesionStatus estatus = sessionsRepository.get(sessionID);
-		switch (estatus)
+		Session estatus = sessionsRepository.get(sessionID);
+		switch (estatus.getSessionStatus())
 		{
 			case OK:
-				return withdrawsRepository.add(withdraw);
+				withdraw = withdrawsRepository.add(withdraw);
+				if (withdraw.getClientID() == 0)
+					return new WithdrawResp(withdraw, WithdrawResp.Status.INVALID_CLIENT);
+				
+				return new WithdrawResp(withdraw, WithdrawResp.Status.OK);
 
 			case EXPIRED:
 				return new WithdrawResp(new Withdraw(), WithdrawResp.Status.SESSION_EXPIRED);
@@ -225,6 +251,9 @@ public class SimpleBankServiceImpl implements SimpleBankService
 
 			case INTERNAL_ERROR:
 				return new WithdrawResp(new Withdraw(), WithdrawResp.Status.SERVER_ERROR);
+				
+			case UNAUTHORIZED:
+				return new WithdrawResp(new Withdraw(), WithdrawResp.Status.UNAUTHORIZED);
 
 			default:
 				throw new SimpleBankServiceException();

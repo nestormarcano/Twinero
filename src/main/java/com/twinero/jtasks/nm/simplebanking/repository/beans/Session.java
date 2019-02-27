@@ -6,10 +6,13 @@ public class Session extends ClientBaseObject
 {
 	public static enum Status
 	{
-		UNDEFINED, OK, UNAUTHORIZED
+		UNDEFINED, OK, UNAUTHORIZED,
+		EXPIRED, NOT_EXISTS, INTERNAL_ERROR
 	}
 
 	private String sessionID;
+	private String email;
+	private String password;
 	private Status sessionStatus;
 
 	public Session ()
@@ -23,6 +26,14 @@ public class Session extends ClientBaseObject
 		sessionStatus = Status.UNDEFINED;
 	}
 
+	public Session (	String theEmail,
+							String thePassword )
+	{
+		this.email = theEmail;
+		this.password = thePassword;
+		sessionStatus = Status.UNDEFINED;
+	}
+
 	/**
 	 * {@inheritDoc}
 	 */
@@ -33,6 +44,8 @@ public class Session extends ClientBaseObject
 		{
 			final Session other = (Session) obj;
 			return (Objects.equals(this.sessionID, other.sessionID)
+					&& Objects.equals(this.email, other.email)
+					&& Objects.equals(this.password, other.password)
 					&& Objects.equals(this.sessionStatus, other.sessionStatus));
 		}
 
@@ -42,7 +55,8 @@ public class Session extends ClientBaseObject
 	@Override
 	public int hashCode ()
 	{
-		return Objects.hash(super.hashCode(), this.sessionID, this.sessionStatus, this.getClientID());
+		return Objects.hash(super.hashCode(), this.sessionID,
+				this.email, this.password, this.sessionStatus, this.getClientID());
 	}
 
 	/**
@@ -56,9 +70,41 @@ public class Session extends ClientBaseObject
 	/**
 	 * @param newSessionID the sessionID to set.
 	 */
-	public void setId (String newSessionID )
+	public void setSessionID (String newSessionID )
 	{
 		this.sessionID = newSessionID;
+	}
+
+	/**
+	 * @return the email
+	 */
+	public String getEmail ()
+	{
+		return email;
+	}
+
+	/**
+	 * @param email the email to set
+	 */
+	public void setEmail (String email )
+	{
+		this.email = email;
+	}
+
+	/**
+	 * @return the password
+	 */
+	public String getPassword ()
+	{
+		return password;
+	}
+
+	/**
+	 * @param password the password to set
+	 */
+	public void setPassword (String password )
+	{
+		this.password = password;
 	}
 
 	/**
