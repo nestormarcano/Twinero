@@ -1,4 +1,4 @@
-# Twinero
+# Java Developer coding task by Twinero
 
 1) To compile:<br>
     $ mvnw clean package
@@ -7,10 +7,7 @@ This will compile and run every single test.
 
 Adicionally it will generate the API REST documentacion in <b>target/generated-docs/api-guide.html</b>
 
-
-The project meets the following requirements:
-
-## Java Developer coding task
+## The project meets the following requirements:
 
 Coding challenge task is to create backend for a simple "banking" application:
 * Client should be able to sign up with email & password
