@@ -149,9 +149,9 @@ include::{snippets}/deposits/deposit/http-response.adoc[]
 
 === Invalid client
 ==== Request
-include::{snippets}/deposits/ivalidDepositBecauseInvalidClient/http-request.adoc[]
+include::{snippets}/deposits/invalidClient/http-request.adoc[]
 ==== Response
-include::{snippets}/deposits/ivalidDepositBecauseInvalidClient/http-response.adoc[]
+include::{snippets}/deposits/invalidClient/http-response.adoc[]
 
 === Session expired
 ==== Request

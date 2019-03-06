@@ -55,27 +55,27 @@ public class DepositResp
 	 */
 	public Status getStatus ()
 	{
-		return status;
+		return this.status;
 	}
 	/**
-	 * @param status the status to set
+	 * @param newStatus the status to set
 	 */
-	public void setStatus (Status status )
+	public void setStatus (Status newStatus )
 	{
-		this.status = status;
+		this.status = newStatus;
 	}
 	/**
 	 * @return the deposit
 	 */
 	public Deposit getDeposit ()
 	{
-		return deposit;
+		return this.deposit;
 	}
 	/**
-	 * @param deposit the deposit to set
+	 * @param newDeposit the deposit to set
 	 */
-	public void setDeposit (Deposit deposit )
+	public void setDeposit (Deposit newDeposit )
 	{
-		this.deposit = deposit;
+		this.deposit = newDeposit;
 	}
 }

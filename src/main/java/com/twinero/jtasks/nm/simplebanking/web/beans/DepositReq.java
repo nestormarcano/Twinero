@@ -10,7 +10,8 @@ public class DepositReq
 	private String sessionID;
 	
 	public DepositReq()
-	{	
+	{
+		this.deposit = new Deposit();
 	}
 	
 	public DepositReq(Deposit theDeposit, String theSessionID)
@@ -43,21 +44,21 @@ public class DepositReq
 	{
 		return Objects.hash(this.deposit, this.sessionID);
 	}
-
+	
 	/**
 	 * @return the deposit
 	 */
 	public Deposit getDeposit ()
 	{
-		return deposit;
+		return this.deposit;
 	}
 
 	/**
-	 * @param deposit the deposit to set
+	 * @param newDeposit the deposit to set
 	 */
-	public void setDeposit (Deposit deposit )
+	public void setDeposit (Deposit newDeposit )
 	{
-		this.deposit = deposit;
+		this.deposit = newDeposit;
 	}
 
 	/**
@@ -65,14 +66,14 @@ public class DepositReq
 	 */
 	public String getSessionID ()
 	{
-		return sessionID;
+		return this.sessionID;
 	}
 
 	/**
-	 * @param sessionID the sessionID to set
+	 * @param newSessionID the sessionID to set
 	 */
-	public void setSessionID (String sessionID )
+	public void setSessionID (String newSessionID )
 	{
-		this.sessionID = sessionID;
+		this.sessionID = newSessionID;
 	}
 }

@@ -145,7 +145,7 @@ public class SimpleBankingController
 					break;
 			}
 
-			return new ResponseEntity<String>(Util.asJsonString(response), status);
+			return new ResponseEntity<String>(Util.asJsonString(response, AccountBalance.DATE_FORMAT), status);
 		}
 
 		// Error handling
@@ -154,7 +154,8 @@ public class SimpleBankingController
 		{
 			AccountBalanceResp response = new AccountBalanceResp(new AccountBalance(),
 					AccountBalanceResp.Status.SERVER_ERROR);
-			return new ResponseEntity<String>(Util.asJsonString(response), HttpStatus.INTERNAL_SERVER_ERROR);
+			return new ResponseEntity<String>(Util.asJsonString(response, AccountBalance.DATE_FORMAT),
+					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
@@ -190,7 +191,7 @@ public class SimpleBankingController
 					break;
 			}
 
-			return new ResponseEntity<String>(Util.asJsonString(response), status);
+			return new ResponseEntity<String>(Util.asJsonString(response, AccountStatement.DATE_FORMAT), status);
 		}
 
 		// Error handling
@@ -199,7 +200,8 @@ public class SimpleBankingController
 		{
 			AccountStatementResp response = new AccountStatementResp(new AccountStatement(),
 					AccountStatementResp.Status.SERVER_ERROR);
-			return new ResponseEntity<String>(Util.asJsonString(response), HttpStatus.INTERNAL_SERVER_ERROR);
+			return new ResponseEntity<String>(Util.asJsonString(response, AccountStatement.DATE_FORMAT),
+					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
@@ -237,15 +239,17 @@ public class SimpleBankingController
 					break;
 			}
 
-			return new ResponseEntity<String>(Util.asJsonString(depositResp), status);
+			return new ResponseEntity<String>(Util.asJsonString(depositResp, Deposit.DATE_FORMAT), status);
 		}
 
 		// Error handling
 		// --------------
 		catch (SimpleBankServiceException ex)
 		{
+			ex.printStackTrace();
 			DepositResp depositResp = new DepositResp(new Deposit(), DepositResp.Status.SERVER_ERROR);
-			return new ResponseEntity<String>(Util.asJsonString(depositResp), HttpStatus.INTERNAL_SERVER_ERROR);
+			return new ResponseEntity<String>(Util.asJsonString(depositResp, Deposit.DATE_FORMAT),
+					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
@@ -283,7 +287,7 @@ public class SimpleBankingController
 					break;
 			}
 
-			return new ResponseEntity<String>(Util.asJsonString(withdrawResp), status);
+			return new ResponseEntity<String>(Util.asJsonString(withdrawResp, Withdraw.DATE_FORMAT), status);
 		}
 
 		// Error handling
@@ -291,7 +295,8 @@ public class SimpleBankingController
 		catch (SimpleBankServiceException ex)
 		{
 			WithdrawResp withdrawResp = new WithdrawResp(new Withdraw(), WithdrawResp.Status.SERVER_ERROR);
-			return new ResponseEntity<String>(Util.asJsonString(withdrawResp), HttpStatus.INTERNAL_SERVER_ERROR);
+			return new ResponseEntity<String>(Util.asJsonString(withdrawResp, Withdraw.DATE_FORMAT),
+					HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 }

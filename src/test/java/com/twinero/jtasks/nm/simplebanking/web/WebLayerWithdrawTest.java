@@ -24,6 +24,8 @@ import com.twinero.jtasks.nm.simplebanking.web.SimpleBankingController;
 import com.twinero.jtasks.nm.simplebanking.web.beans.WithdrawReq;
 
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.mockito.Mockito.only;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
@@ -31,6 +33,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.math.BigDecimal;
+import java.util.Date;
 
 @RunWith(SpringRunner.class)
 @WebMvcTest(SimpleBankingController.class)
@@ -58,27 +63,39 @@ public class WebLayerWithdrawTest
 		Session session = new Session("5dd35b40-2410-11e9-b56e-0800200c9a66");
 		session.setClientID(clientID);
 
-		Withdraw withdrawForReq = new Withdraw();
+		// 2019-02-24T14:00:27.87-04:00
+		Date time = new Date(1551031227087L);
 
-		withdrawForReq.setClientID(session.getClientID());
-		WithdrawReq withdrawReq = new WithdrawReq(withdrawForReq, session.getSessionID());
+		Withdraw withdraw = new Withdraw();
+		withdraw.setClientID(session.getClientID());
+		withdraw.setMount(new BigDecimal(1250.25));
+		withdraw.setTime(time);
 
-		Withdraw withdrawForResp = new Withdraw(98785);
-		WithdrawResp withdrawResp = new WithdrawResp(withdrawForResp, WithdrawResp.Status.OK);
+		WithdrawReq withdrawReq = new WithdrawReq(withdraw, session.getSessionID());
 
-		when(service.doWithdraw(withdrawForReq, session.getSessionID())).thenReturn((withdrawResp));
+		Withdraw expectedWithdraw = new Withdraw(98785);
+		expectedWithdraw.setClientID(session.getClientID());
+		expectedWithdraw.setMount(new BigDecimal(1250.25));
+		expectedWithdraw.setTime(time);
+		expectedWithdraw.setReference("55629701");
+
+		WithdrawResp expectedWithdrawResp = new WithdrawResp(expectedWithdraw, WithdrawResp.Status.OK);
+
+		when(service.doWithdraw(withdraw, session.getSessionID())).thenReturn((expectedWithdrawResp));
 
 		this.mockMvc
 				.perform(post("/simpleBanking/withdraws")
 						.contentType(MediaType.APPLICATION_JSON)
-						.content(Util.asJsonString(withdrawReq))
+						.content(Util.asJsonString(withdrawReq, Withdraw.DATE_FORMAT))
 						.characterEncoding("UTF-8"))
 				.andDo(print())
 				.andExpect(status().isCreated())
-				.andExpect(content().string(containsString(Util.asJsonString(withdrawResp))))
+				.andExpect(content().string(containsString(Util.asJsonString(expectedWithdrawResp, Withdraw.DATE_FORMAT))))
 				.andExpect(content().contentType("application/json;charset=UTF-8"))
 				.andDo(document("withdraws/withdraw"))
 				.andReturn();
+		
+		verify(service, only()).doWithdraw(withdraw, session.getSessionID());
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -96,27 +113,33 @@ public class WebLayerWithdrawTest
 		Session session = new Session("5dd35b40-2410-11e9-b56e-0800200c9a66");
 		session.setClientID(clientID);
 
-		Withdraw withdrawForReq = new Withdraw();
+		// 2019-02-24T14:00:27.87-04:00
+		Date time = new Date(1551031227087L);
 
-		withdrawForReq.setClientID(session.getClientID());
-		WithdrawReq withdrawReq = new WithdrawReq(withdrawForReq, session.getSessionID());
+		Withdraw withdraw = new Withdraw();
+		withdraw.setClientID(session.getClientID());
+		withdraw.setMount(new BigDecimal(1250.25));
+		withdraw.setTime(time);
+		WithdrawReq withdrawReq = new WithdrawReq(withdraw, session.getSessionID());
 
-		Withdraw withdrawForResp = new Withdraw();
-		WithdrawResp withdrawResp = new WithdrawResp(withdrawForResp, WithdrawResp.Status.INVALID_CLIENT);
+		Withdraw expectedWithdraw = new Withdraw();
+		WithdrawResp expectedWithdrawResp = new WithdrawResp(expectedWithdraw, WithdrawResp.Status.INVALID_CLIENT);
 
-		when(service.doWithdraw(withdrawForReq, session.getSessionID())).thenReturn((withdrawResp));
+		when(service.doWithdraw(withdraw, session.getSessionID())).thenReturn((expectedWithdrawResp));
 
 		this.mockMvc
 				.perform(post("/simpleBanking/withdraws")
 						.contentType(MediaType.APPLICATION_JSON)
-						.content(Util.asJsonString(withdrawReq))
+						.content(Util.asJsonString(withdrawReq, Withdraw.DATE_FORMAT))
 						.characterEncoding("UTF-8"))
 				.andDo(print())
 				.andExpect(status().isConflict())
-				.andExpect(content().string(containsString(Util.asJsonString(withdrawResp))))
+				.andExpect(content().string(containsString(Util.asJsonString(expectedWithdrawResp, Withdraw.DATE_FORMAT))))
 				.andExpect(content().contentType("application/json;charset=UTF-8"))
 				.andDo(document("withdraws/invalidClient"))
 				.andReturn();
+		
+		verify(service, only()).doWithdraw(withdraw, session.getSessionID());
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -134,27 +157,33 @@ public class WebLayerWithdrawTest
 		Session session = new Session("5dd35b40-2410-11e9-b56e-0800200c9a66");
 		session.setClientID(clientID);
 
-		Withdraw withdrawForReq = new Withdraw();
+		// 2019-02-24T14:00:27.87-04:00
+		Date time = new Date(1551031227087L);
 
-		withdrawForReq.setClientID(session.getClientID());
-		WithdrawReq withdrawReq = new WithdrawReq(withdrawForReq, session.getSessionID());
+		Withdraw withdraw = new Withdraw();
+		withdraw.setClientID(session.getClientID());
+		withdraw.setMount(new BigDecimal(1250.25));
+		withdraw.setTime(time);
+		WithdrawReq withdrawReq = new WithdrawReq(withdraw, session.getSessionID());
 
-		Withdraw withdrawForResp = new Withdraw();
-		WithdrawResp withdrawResp = new WithdrawResp(withdrawForResp, WithdrawResp.Status.SESSION_EXPIRED);
+		Withdraw expectedWithdraw = new Withdraw();
+		WithdrawResp expectedWithdrawResp = new WithdrawResp(expectedWithdraw, WithdrawResp.Status.SESSION_EXPIRED);
 
-		when(service.doWithdraw(withdrawForReq, session.getSessionID())).thenReturn((withdrawResp));
+		when(service.doWithdraw(withdraw, session.getSessionID())).thenReturn((expectedWithdrawResp));
 
 		this.mockMvc
 				.perform(post("/simpleBanking/withdraws")
 						.contentType(MediaType.APPLICATION_JSON)
-						.content(Util.asJsonString(withdrawReq))
+						.content(Util.asJsonString(withdrawReq, Withdraw.DATE_FORMAT))
 						.characterEncoding("UTF-8"))
 				.andDo(print())
 				.andExpect(status().isUnauthorized())
-				.andExpect(content().string(containsString(Util.asJsonString(withdrawResp))))
+				.andExpect(content().string(containsString(Util.asJsonString(expectedWithdrawResp, Withdraw.DATE_FORMAT))))
 				.andExpect(content().contentType("application/json;charset=UTF-8"))
 				.andDo(document("withdraws/expiredSession"))
 				.andReturn();
+		
+		verify(service, only()).doWithdraw(withdraw, session.getSessionID());
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -172,27 +201,34 @@ public class WebLayerWithdrawTest
 		Session session = new Session("5dd35b40-2410-11e9-b56e-0800200c9a66");
 		session.setClientID(clientID);
 
-		Withdraw withdrawForReq = new Withdraw();
+		// 2019-02-24T14:00:27.87-04:00
+		Date time = new Date(1551031227087L);
+		
+		Withdraw withdraw = new Withdraw();
+		withdraw.setClientID(session.getClientID());
+		withdraw.setMount(new BigDecimal(1250.25));
+		withdraw.setTime(time);
+		WithdrawReq withdrawReq = new WithdrawReq(withdraw, session.getSessionID());
 
-		withdrawForReq.setClientID(session.getClientID());
-		WithdrawReq withdrawReq = new WithdrawReq(withdrawForReq, session.getSessionID());
+		Withdraw expectedWithdraw = new Withdraw();
+		WithdrawResp expectedWithdrawResp = new WithdrawResp(expectedWithdraw,
+				WithdrawResp.Status.SESSION_DOES_NOT_EXIST);
 
-		Withdraw withdrawForResp = new Withdraw();
-		WithdrawResp withdrawResp = new WithdrawResp(withdrawForResp, WithdrawResp.Status.SESSION_DOES_NOT_EXIST);
-
-		when(service.doWithdraw(withdrawForReq, session.getSessionID())).thenReturn((withdrawResp));
+		when(service.doWithdraw(withdraw, session.getSessionID())).thenReturn((expectedWithdrawResp));
 
 		this.mockMvc
 				.perform(post("/simpleBanking/withdraws")
 						.contentType(MediaType.APPLICATION_JSON)
-						.content(Util.asJsonString(withdrawReq))
+						.content(Util.asJsonString(withdrawReq, Withdraw.DATE_FORMAT))
 						.characterEncoding("UTF-8"))
 				.andDo(print())
 				.andExpect(status().isUnauthorized())
-				.andExpect(content().string(containsString(Util.asJsonString(withdrawResp))))
+				.andExpect(content().string(containsString(Util.asJsonString(expectedWithdrawResp, Withdraw.DATE_FORMAT))))
 				.andExpect(content().contentType("application/json;charset=UTF-8"))
 				.andDo(document("withdraws/sessionDoesNotExist"))
 				.andReturn();
+		
+		verify(service, only()).doWithdraw(withdraw, session.getSessionID());
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -210,26 +246,33 @@ public class WebLayerWithdrawTest
 		Session session = new Session("5dd35b40-2410-11e9-b56e-0800200c9a66");
 		session.setClientID(clientID);
 
-		Withdraw withdrawForReq = new Withdraw();
+		// 2019-02-24T14:00:27.87-04:00
+		Date time = new Date(1551031227087L);
+		
+		Withdraw withdraw = new Withdraw();
+		withdraw.setClientID(session.getClientID());
+		withdraw.setMount(new BigDecimal(1250.25));
+		withdraw.setTime(time);
+		
+		WithdrawReq withdrawReq = new WithdrawReq(withdraw, session.getSessionID());
 
-		withdrawForReq.setClientID(session.getClientID());
-		WithdrawReq withdrawReq = new WithdrawReq(withdrawForReq, session.getSessionID());
+		Withdraw expectedWithdraw = new Withdraw();
+		WithdrawResp expectedWithdrawResp = new WithdrawResp(expectedWithdraw, WithdrawResp.Status.SERVER_ERROR);
 
-		Withdraw withdrawForResp = new Withdraw();
-		WithdrawResp withdrawResp = new WithdrawResp(withdrawForResp, WithdrawResp.Status.SERVER_ERROR);
-
-		when(service.doWithdraw(withdrawForReq, session.getSessionID())).thenThrow(SimpleBankServiceException.class);
+		when(service.doWithdraw(withdraw, session.getSessionID())).thenThrow(SimpleBankServiceException.class);
 
 		this.mockMvc
 				.perform(post("/simpleBanking/withdraws")
 						.contentType(MediaType.APPLICATION_JSON)
-						.content(Util.asJsonString(withdrawReq))
+						.content(Util.asJsonString(withdrawReq, Withdraw.DATE_FORMAT))
 						.characterEncoding("UTF-8"))
 				.andDo(print())
 				.andExpect(status().is5xxServerError())
-				.andExpect(content().string(containsString(Util.asJsonString(withdrawResp))))
+				.andExpect(content().string(containsString(Util.asJsonString(expectedWithdrawResp, Withdraw.DATE_FORMAT))))
 				.andExpect(content().contentType("application/json;charset=UTF-8"))
 				.andDo(document("withdraws/serverError"))
 				.andReturn();
+		
+		verify(service, only()).doWithdraw(withdraw, session.getSessionID());
 	}
 }

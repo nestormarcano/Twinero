@@ -31,6 +31,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.math.BigDecimal;
+import java.util.Date;
+
 @RunWith(SpringRunner.class)
 @WebMvcTest(SimpleBankingController.class)
 @AutoConfigureRestDocs(outputDir = "target/snippets")
@@ -53,14 +56,23 @@ public class WebLayerAccountBalancesTest
 	public void shouldReturnAnAccountBalance ()
 		throws Exception
 	{
-		long clientID = 10;
+		long clientID = 10746;
 		Session session = new Session("5dd35b40-2410-11e9-b56e-0800200c9a66");
 		session.setClientID(clientID);
 
-		AccountBalance balance = new AccountBalance();
-		AccountBalanceResp accountBalanceResp = new AccountBalanceResp(balance, AccountBalanceResp.Status.OK);
+		AccountBalance expectedAccountBalance = new AccountBalance(54321);
+		expectedAccountBalance.setClientID(clientID);
+		expectedAccountBalance.setDate(new Date());
+		expectedAccountBalance.setAvailable(new BigDecimal(2764.53));
+		expectedAccountBalance.setBlocked(new BigDecimal(367.45));
+		expectedAccountBalance.setDeferred(new BigDecimal(182.81));
+		expectedAccountBalance.setTotal(new BigDecimal(7650.02));
 
-		when(service.getAccountBalance(session.getClientID(), session.getSessionID())).thenReturn(accountBalanceResp);
+		AccountBalanceResp expectedAccountBalanceResp = new AccountBalanceResp(expectedAccountBalance,
+				AccountBalanceResp.Status.OK);
+
+		when(service.getAccountBalance(session.getClientID(), session.getSessionID()))
+				.thenReturn(expectedAccountBalanceResp);
 
 		this.mockMvc
 				.perform(get("/simpleBanking/accountBalances/" + session.getClientID())
@@ -68,11 +80,12 @@ public class WebLayerAccountBalancesTest
 						.characterEncoding("UTF-8"))
 				.andDo(print())
 				.andExpect(status().isOk())
-				.andExpect(content().string(containsString(Util.asJsonString(accountBalanceResp))))
+				.andExpect(content()
+						.string(containsString(Util.asJsonString(expectedAccountBalanceResp, AccountBalance.DATE_FORMAT))))
 				.andExpect(content().contentType("application/json;charset=UTF-8"))
 				.andDo(document("accountBalances/accountBalance"))
 				.andReturn();
-		
+
 		verify(service, only()).getAccountBalance(session.getClientID(), session.getSessionID());
 	}
 
@@ -91,11 +104,12 @@ public class WebLayerAccountBalancesTest
 		Session session = new Session("5dd35b40-2410-11e9-b56e-0800200c9a66");
 		session.setClientID(clientID);
 
-		AccountBalance balance = new AccountBalance();
-		AccountBalanceResp accountBalanceResp = new AccountBalanceResp(balance,
+		AccountBalance expectedAccountBalance = new AccountBalance();
+		AccountBalanceResp expectedAccountBalanceResp = new AccountBalanceResp(expectedAccountBalance,
 				AccountBalanceResp.Status.SESSION_EXPIRED);
 
-		when(service.getAccountBalance(session.getClientID(), session.getSessionID())).thenReturn(accountBalanceResp);
+		when(service.getAccountBalance(session.getClientID(), session.getSessionID()))
+				.thenReturn(expectedAccountBalanceResp);
 
 		this.mockMvc
 				.perform(get("/simpleBanking/accountBalances/" + session.getClientID())
@@ -103,11 +117,12 @@ public class WebLayerAccountBalancesTest
 						.characterEncoding("UTF-8"))
 				.andDo(print())
 				.andExpect(status().isUnauthorized())
-				.andExpect(content().string(containsString(Util.asJsonString(accountBalanceResp))))
+				.andExpect(content()
+						.string(containsString(Util.asJsonString(expectedAccountBalanceResp, AccountBalance.DATE_FORMAT))))
 				.andExpect(content().contentType("application/json;charset=UTF-8"))
 				.andDo(document("accountBalances/expiredSession"))
 				.andReturn();
-		
+
 		verify(service, only()).getAccountBalance(session.getClientID(), session.getSessionID());
 	}
 
@@ -126,11 +141,12 @@ public class WebLayerAccountBalancesTest
 		Session session = new Session("5dd35b40-2410-11e9-b56e-0800200c9a66");
 		session.setClientID(clientID);
 
-		AccountBalance balance = new AccountBalance();
-		AccountBalanceResp accountBalanceResp = new AccountBalanceResp(balance,
+		AccountBalance expectedAccountBalance = new AccountBalance();
+		AccountBalanceResp expectedAccountBalanceResp = new AccountBalanceResp(expectedAccountBalance,
 				AccountBalanceResp.Status.SESSION_DOES_NOT_EXIST);
 
-		when(service.getAccountBalance(session.getClientID(), session.getSessionID())).thenReturn(accountBalanceResp);
+		when(service.getAccountBalance(session.getClientID(), session.getSessionID()))
+				.thenReturn(expectedAccountBalanceResp);
 
 		this.mockMvc
 				.perform(get("/simpleBanking/accountBalances/" + session.getClientID())
@@ -138,11 +154,12 @@ public class WebLayerAccountBalancesTest
 						.characterEncoding("UTF-8"))
 				.andDo(print())
 				.andExpect(status().isUnauthorized())
-				.andExpect(content().string(containsString(Util.asJsonString(accountBalanceResp))))
+				.andExpect(content()
+						.string(containsString(Util.asJsonString(expectedAccountBalanceResp, AccountBalance.DATE_FORMAT))))
 				.andExpect(content().contentType("application/json;charset=UTF-8"))
 				.andDo(document("accountBalances/sessionDoesNotExist"))
 				.andReturn();
-		
+
 		verify(service, only()).getAccountBalance(session.getClientID(), session.getSessionID());
 	}
 
@@ -161,8 +178,8 @@ public class WebLayerAccountBalancesTest
 		Session session = new Session("5dd35b40-2410-11e9-b56e-0800200c9a66");
 		session.setClientID(clientID);
 
-		AccountBalance balance = new AccountBalance();
-		AccountBalanceResp accountBalanceResp = new AccountBalanceResp(balance,
+		AccountBalance expectedAccountBalance = new AccountBalance();
+		AccountBalanceResp expectedAccountBalanceResp = new AccountBalanceResp(expectedAccountBalance,
 				AccountBalanceResp.Status.SERVER_ERROR);
 
 		when(service.getAccountBalance(session.getClientID(), session.getSessionID()))
@@ -174,11 +191,12 @@ public class WebLayerAccountBalancesTest
 						.characterEncoding("UTF-8"))
 				.andDo(print())
 				.andExpect(status().is5xxServerError())
-				.andExpect(content().string(containsString(Util.asJsonString(accountBalanceResp))))
+				.andExpect(content()
+						.string(containsString(Util.asJsonString(expectedAccountBalanceResp, AccountBalance.DATE_FORMAT))))
 				.andExpect(content().contentType("application/json;charset=UTF-8"))
 				.andDo(document("accountBalances/notAccountBalanceServerError"))
 				.andReturn();
-		
+
 		verify(service, only()).getAccountBalance(session.getClientID(), session.getSessionID());
 	}
 }

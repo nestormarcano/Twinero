@@ -8,6 +8,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import java.math.BigDecimal;
+import java.util.Date;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -146,8 +149,10 @@ public class ServiceLayerDepositTest
 			session.setClientID(clientID);
 			session.setSessionStatus(Session.Status.EXPIRED);
 
-			Deposit deposit = new Deposit(123);
+			Deposit deposit = new Deposit();
 			deposit.setClientID(clientID);
+			deposit.setMount(new BigDecimal(24563.87));
+			deposit.setTime(new Date(1551118553000L));
 
 			Deposit expectedDeposit = new Deposit();
 			DepositResp expectedDepositResp = new DepositResp(expectedDeposit, DepositResp.Status.SESSION_EXPIRED);
