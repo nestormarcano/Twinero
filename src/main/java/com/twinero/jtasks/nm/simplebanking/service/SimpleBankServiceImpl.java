@@ -1,7 +1,6 @@
 package com.twinero.jtasks.nm.simplebanking.service;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -40,6 +39,11 @@ import com.twinero.jtasks.nm.simplebanking.service.beans.MovementResp;
 import com.twinero.jtasks.nm.simplebanking.service.beans.Session;
 import com.twinero.jtasks.nm.simplebanking.service.beans.Movement;
 
+/**
+ * Implements the service Simple Bank application layer.
+ * @author Nestor Marcano.
+ */
+// --------------------------------------------------------------------------------------------------------------------
 @Service
 @Validated
 public class SimpleBankServiceImpl implements SimpleBankService
@@ -49,9 +53,6 @@ public class SimpleBankServiceImpl implements SimpleBankService
 
 	@Autowired
 	private SessionsRepository sessionsRepository;
-
-	// @Autowired
-	// private AccountBalancesRepository accountBalancesRepository;
 
 	@Autowired
 	private MovementsRepository movementsRepository;
@@ -64,11 +65,24 @@ public class SimpleBankServiceImpl implements SimpleBankService
 
 	private ModelMapper modelMapper;
 
+	// -----------------------------------------------------------------------------------------------------------------
+	// ------------------------------------------------------------------------------------------- SimpleBankServiceImpl
+	/**
+	 * Default constructor.
+	 */
+	// -----------------------------------------------------------------------------------------------------------------
 	public SimpleBankServiceImpl ()
 	{
 		this.modelMapper = modelMapper();
 	}
 
+	// -----------------------------------------------------------------------------------------------------------------
+	// ----------------------------------------------------------------------------------------------------- modelMapper
+	/**
+	 * Returns a new instance of the mapper.
+	 * @return A new instance of the mapper.
+	 */
+	// ----------------------------------------------------------------------------------------------------- modelMapper
 	private static ModelMapper modelMapper ()
 	{
 		return new ModelMapper();
@@ -97,7 +111,7 @@ public class SimpleBankServiceImpl implements SimpleBankService
 						.getSimpleName();
 				String uniqueEmailClassName = UniqueEmail.class.getSimpleName();
 				if (uniqueEmailClassName.equals(constrainName))
-				{ return sign; }
+					return sign;
 			}
 		}
 
@@ -201,16 +215,16 @@ public class SimpleBankServiceImpl implements SimpleBankService
 						.findByCustomerAndTimeBetween(clientID, since, until);
 
 				BigDecimal available = new BigDecimal(statementDAO.getFinalAmount().doubleValue());
-				
+
 				for (MovementDAO movementDAO : movementsDAO)
 				{
 					available = available.add(movementDAO.getType() == MovementDAO.Type.DEPOSIT
 							? movementDAO.getAmount()
 							: movementDAO.getAmount().negate());
-					
+
 					available = available.add(movementDAO.getTax().negate());
 				}
-				
+
 				available = available.setScale(2, BigDecimal.ROUND_UP);
 
 				Balance balance = new Balance();

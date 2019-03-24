@@ -2,6 +2,13 @@ package com.twinero.jtasks.nm.simplebanking.service.beans;
 
 import java.util.Objects;
 
+/**
+ * Contains the response from the getBalance method of the service.<br>
+ * The respond consists of a balance and a session status.
+ * 
+ * @author Nestor Marcano.
+ */
+// --------------------------------------------------------------------------------------------------------------------
 public class BalanceResp
 {
 	public static enum SessionStatus

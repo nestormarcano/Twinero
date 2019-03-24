@@ -12,6 +12,11 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.twinero.jtasks.nm.simplebanking.repository.beans.ClientBaseObject;
 import com.twinero.jtasks.nm.simplebanking.utils.MoneySerializer;
 
+/**
+ * Implements the Movement domain object for the Simple Bank application.
+ * @author Nestor Marcano.
+ */
+// --------------------------------------------------------------------------------------------------------------------
 public class Movement extends ClientBaseObject
 {
 	public static enum Type
@@ -73,6 +78,9 @@ public class Movement extends ClientBaseObject
 		return false;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public int hashCode ()
 	{
@@ -153,7 +161,7 @@ public class Movement extends ClientBaseObject
 	}
 
 	/**
-	 * @param time the time to set
+	 * @param newTime the time to set
 	 */
 	public void setTime (Date newTime )
 	{
@@ -169,11 +177,11 @@ public class Movement extends ClientBaseObject
 	}
 
 	/**
-	 * @param reference the reference to set
+	 * @param newReference the reference to set
 	 */
-	public void setReference (String reference )
+	public void setReference (String newReference )
 	{
-		this.reference = reference;
+		this.reference = newReference;
 	}
 
 	/**

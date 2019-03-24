@@ -8,6 +8,11 @@ import java.lang.annotation.ElementType;
 import javax.validation.Constraint;
 import javax.validation.Payload;
 
+/**
+ * Indicates thas an email field is unique in the BD.
+ * @author Nestor Marcano.
+ */
+// --------------------------------------------------------------------------------------------------------------------
 @Target({ ElementType.METHOD, ElementType.FIELD })
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = UniqueEmailValidator.class)

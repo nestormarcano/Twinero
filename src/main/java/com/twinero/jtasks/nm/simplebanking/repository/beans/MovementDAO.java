@@ -24,6 +24,10 @@ import org.springframework.lang.NonNull;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.twinero.jtasks.nm.simplebanking.utils.MoneySerializer;
 
+/**
+ * DAO entity that contains the data for a movement in the movements table.
+ * @author Nestor Marcano.
+ */
 @Entity
 @Table(name = "movements")
 @EntityListeners(AuditingEntityListener.class)
@@ -71,10 +75,17 @@ public class MovementDAO extends ClientBaseObject
 	@JoinColumn(name = "customer_id")
 	private SignDAO customer;
 
+	/**
+	 * Default constructor.
+	 */
 	public MovementDAO ()
 	{
 	}
 
+	/**
+	 * Constructor with the movement id.
+	 * @param theMovementID The movement id.
+	 */
 	public MovementDAO ( long theMovementID )
 	{
 		this.movementID = theMovementID;
@@ -108,6 +119,9 @@ public class MovementDAO extends ClientBaseObject
 		return false;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public int hashCode ()
 	{
@@ -188,7 +202,7 @@ public class MovementDAO extends ClientBaseObject
 	}
 
 	/**
-	 * @param time the time to set
+	 * @param newTime the time to set
 	 */
 	public void setTime (Date newTime )
 	{

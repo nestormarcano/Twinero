@@ -16,6 +16,11 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.twinero.jtasks.nm.simplebanking.repository.beans.ClientBaseObject;
 import com.twinero.jtasks.nm.simplebanking.utils.MoneySerializer;
 
+/**
+ * Implements the DTO deposit object.
+ * @author Nestor Marcano.
+ */
+// --------------------------------------------------------------------------------------------------------------------
 public class DepositDTO extends ClientBaseObject
 {
 	private long movementID;

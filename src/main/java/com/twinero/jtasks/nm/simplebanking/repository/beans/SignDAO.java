@@ -27,10 +27,8 @@ import com.twinero.jtasks.nm.simplebanking.repository.beans.annotations.UniqueEm
 import com.twinero.jtasks.nm.simplebanking.web.beans.annotations.Password;
 
 /**
- * Contains the signing data.<br>
- * It is the data to sign-up.
- * 
- * @author Nestor Marcano
+ * DAO entity that contains the data for a client sign-up in the customers table.
+ * @author Nestor Marcano.
  */
 @Entity
 @Table(name = "customers")
@@ -106,12 +104,6 @@ public class SignDAO
 		this.password = password;
 	}
 
-	@Override
-	public String toString ()
-	{
-		return String.format("SignDAO[signID=%d, email='%s', password='%s']", signID, email, password);
-	}
-
 	/**
 	 * {@inheritDoc}
 	 */
@@ -129,6 +121,9 @@ public class SignDAO
 				&& Objects.equals(this.password, other.password));
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public int hashCode ()
 	{
@@ -144,7 +139,7 @@ public class SignDAO
 	}
 
 	/**
-	 * @param signID the signID to set
+	 * @param newSignID the signID to set
 	 */
 	public void setSignID (long newSignID )
 	{

@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 @ControllerAdvice
 public class ErrorHandler
 {
-
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<ErrorInfo> methodArgumentNotValidException (HttpServletRequest request,
 																							MethodArgumentNotValidException e )

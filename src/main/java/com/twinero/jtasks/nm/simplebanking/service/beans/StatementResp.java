@@ -2,6 +2,13 @@ package com.twinero.jtasks.nm.simplebanking.service.beans;
 
 import java.util.Objects;
 
+/**
+ * Contains the response from the getStatements method of the service.<br>
+ * The respond consists of a statement and a session status.
+ * 
+ * @author Nestor Marcano.
+ */
+// --------------------------------------------------------------------------------------------------------------------
 public class StatementResp
 {
 	public static enum SessionStatus

@@ -6,6 +6,11 @@ import java.util.Set;
 
 import com.twinero.jtasks.nm.simplebanking.repository.beans.ClientBaseObject;
 
+/**
+ * Implements the Statement domain object for the Simple Bank application.
+ * @author Nestor Marcano.
+ */
+// --------------------------------------------------------------------------------------------------------------------
 public class Statement extends ClientBaseObject
 {
 	private long id;

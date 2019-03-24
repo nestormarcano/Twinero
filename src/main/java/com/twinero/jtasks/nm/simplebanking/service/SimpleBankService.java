@@ -15,6 +15,10 @@ import com.twinero.jtasks.nm.simplebanking.service.beans.MovementResp;
 import com.twinero.jtasks.nm.simplebanking.service.beans.Session;
 import com.twinero.jtasks.nm.simplebanking.service.beans.Movement;
 
+/**
+ * Service layer for the Simple Bank appliction.
+ * @author Nestor Marcano
+ */
 @Service
 @Validated
 public interface SimpleBankService
@@ -98,10 +102,16 @@ public interface SimpleBankService
 	// -----------------------------------------------------------------------------------------------------------------
 	// ------------------------------------------------------------------------------------------------------ doWithdraw
 	/**
-	 * {@inheritDoc}
+	 * Performs a withdraw in the client's account.
+	 * 
+	 * @param withdraw The withdraw data.
+	 * @param sessionID The session ID.
+	 * 
+	 * @return The data of the response.
+	 * @throws SimpleBankServiceException Object with the error data.
 	 */
 	// -----------------------------------------------------------------------------------------------------------------
-	public MovementResp doWithdraw (	Movement depositForReq,
+	public MovementResp doWithdraw (	Movement withdraw,
 												UUID sessionID )
 		throws SimpleBankServiceException;
 }

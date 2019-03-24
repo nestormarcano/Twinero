@@ -10,6 +10,11 @@ import java.util.TimeZone;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.twinero.jtasks.nm.simplebanking.utils.MoneySerializer;
 
+/**
+ * Implements the DTO movement object.
+ * @author Nestor Marcano.
+ */
+// --------------------------------------------------------------------------------------------------------------------
 public class MovementDTO
 {
 	public static enum Type
@@ -79,17 +84,17 @@ public class MovementDTO
 				&& Objects.equals(this.date, other.date)
 				&& Objects.equals(this.reference, other.reference)
 				&& Objects.equals(this.description, other.description)
-				//&& Objects.equals(this.deposit, other.deposit)
-				//&& Objects.equals(this.withdraw, other.withdraw)
 				&& Objects.equals(this.amount, other.amount)
 				&& Objects.equals(this.tax, other.tax));
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public int hashCode ()
 	{
 		return Objects.hash(super.hashCode(), this.movementID, this.date,
-				//this.reference, this.description, this.deposit, this.withdraw, this.tax);
 				this.reference, this.description, this.amount, this.tax);
 	}
 
@@ -102,7 +107,7 @@ public class MovementDTO
 	}
 
 	/**
-	 * @param movementID the movementID to set
+	 * @param newMovementID the movementID to set
 	 */
 	public void setMovementID (long newMovementID )
 	{

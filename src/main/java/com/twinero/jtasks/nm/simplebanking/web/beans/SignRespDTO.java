@@ -26,12 +26,11 @@ public class SignRespDTO
 	/**
 	 * Constructor with email and password.
 	 * 
-	 * @param email    Customer's email.
-	 * @param password Customr's password.
+	 * @param theEmail Customer's email.
 	 */
-	public SignRespDTO ( String email )
+	public SignRespDTO ( String theEmail )
 	{
-		this.email = email;
+		this.email = theEmail;
 		this.status = Status.UNDEFINED_STATUS;
 	}
 
@@ -58,6 +57,9 @@ public class SignRespDTO
 				&& Objects.equals(this.status, other.status));
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public int hashCode ()
 	{
@@ -73,7 +75,7 @@ public class SignRespDTO
 	}
 
 	/**
-	 * @param signID the signID to set
+	 * @param newSignID the signID to set
 	 */
 	public void setSignID (long newSignID )
 	{

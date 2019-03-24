@@ -2,14 +2,25 @@ package com.twinero.jtasks.nm.simplebanking.repository.beans;
 
 import java.util.Objects;
 
+/**
+ * Client base object that just contains the client id information.
+ * @author Nestor Marcano.
+ */
 public abstract class ClientBaseObject
 {
 	private long clientID;
 
+	/**
+	 * Default constructor.
+	 */
 	public ClientBaseObject ()
 	{
 	}
 
+	/**
+	 * Constructor with the client id.
+	 * @param theClientID The client id.
+	 */
 	public ClientBaseObject ( long theClientID )
 	{
 		this.clientID = theClientID;

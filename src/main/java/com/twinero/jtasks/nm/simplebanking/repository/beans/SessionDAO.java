@@ -19,6 +19,10 @@ import javax.persistence.TemporalType;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+/**
+ * DAO entity that contains the data for a client session in the sessions table.
+ * @author Nestor Marcano.
+ */
 @Entity
 @Table(name = "sessions")
 @EntityListeners(AuditingEntityListener.class)

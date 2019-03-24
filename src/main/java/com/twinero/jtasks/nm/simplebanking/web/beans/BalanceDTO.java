@@ -11,6 +11,11 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.twinero.jtasks.nm.simplebanking.repository.beans.ClientBaseObject;
 import com.twinero.jtasks.nm.simplebanking.utils.MoneySerializer;
 
+/**
+ * Implements the DTO balance object.
+ * @author Nestor Marcano
+ */
+// --------------------------------------------------------------------------------------------------------------------
 public class BalanceDTO extends ClientBaseObject
 {
 	private String date;
@@ -28,7 +33,7 @@ public class BalanceDTO extends ClientBaseObject
 	private BigDecimal blocked;
 	
 	// -----------------------------------------------------------------------------------------------------------------
-	// --------------------------------------------------------------------------- default constructor BalanceDTO
+	// ---------------------------------------------------------------------------------- default constructor BalanceDTO
 	/**
 	 * Default constructor
 	 */
@@ -194,7 +199,7 @@ public class BalanceDTO extends ClientBaseObject
 	}
 
 	/**
-	 * @param blocked the blocked to set
+	 * @param newBlocked the blocked to set
 	 */
 	public void setBlocked (BigDecimal newBlocked )
 	{

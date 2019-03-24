@@ -45,6 +45,11 @@ import com.twinero.jtasks.nm.simplebanking.web.beans.WithdrawDTO;
 import com.twinero.jtasks.nm.simplebanking.web.beans.WithdrawReqDTO;
 import com.twinero.jtasks.nm.simplebanking.web.beans.WithdrawRespDTO;
 
+/**
+ * The controller for the Simple Bank application.
+ * @author Nestor Marcano.
+ */
+// --------------------------------------------------------------------------------------------------------------------
 @RestController
 @RequestMapping("/simpleBanking")
 public class SimpleBankingController
@@ -250,7 +255,7 @@ public class SimpleBankingController
 	/**
 	 * Performs a deposit in a account of one client.
 	 * 
-	 * @param depositReq The request's data.
+	 * @param depositReqDTO The request's data.
 	 * @return An object with the new sessionID just created.
 	 */
 	// -----------------------------------------------------------------------------------------------------------------

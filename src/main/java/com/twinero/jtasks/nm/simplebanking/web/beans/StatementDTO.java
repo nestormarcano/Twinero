@@ -9,6 +9,11 @@ import java.util.TimeZone;
 
 import com.twinero.jtasks.nm.simplebanking.repository.beans.ClientBaseObject;
 
+/**
+ * Implements the DTO statement object.
+ * @author Nestor Marcano.
+ */
+// --------------------------------------------------------------------------------------------------------------------
 public class StatementDTO extends ClientBaseObject
 {
 	private long id;

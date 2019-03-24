@@ -6,6 +6,11 @@ import java.util.Objects;
 
 import com.twinero.jtasks.nm.simplebanking.repository.beans.ClientBaseObject;
 
+/**
+ * Implements the Balance domain object for the Simple Bank application.
+ * @author Nestor Marcano.
+ */
+// --------------------------------------------------------------------------------------------------------------------
 public class Balance extends ClientBaseObject
 {
 	private Date date;
@@ -43,6 +48,9 @@ public class Balance extends ClientBaseObject
 		return false;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public int hashCode ()
 	{
@@ -123,7 +131,7 @@ public class Balance extends ClientBaseObject
 	}
 
 	/**
-	 * @param blocked the blocked to set
+	 * @param newBlocked the blocked to set
 	 */
 	public void setBlocked (BigDecimal newBlocked )
 	{

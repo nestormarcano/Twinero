@@ -8,6 +8,11 @@ import org.springframework.data.domain.Example;
 import com.twinero.jtasks.nm.simplebanking.repository.SignupsRepository;
 import com.twinero.jtasks.nm.simplebanking.repository.beans.SignDAO;
 
+/**
+ * The validator for the UniqueEmail constraint.
+ * @author Nestor Marcano.
+ */
+// --------------------------------------------------------------------------------------------------------------------
 public class UniqueEmailValidator implements ConstraintValidator<UniqueEmail, String>
 {
 	private SignupsRepository signupsRepository;

@@ -1,11 +1,18 @@
 # Java Developer coding task by Twinero
 
 1) To compile:<br>
-    $ mvnw clean package
+    $ mvn clean package
 
-This will compile and run every single test.
+This will compile, run every single test and generate the Jacoco report.
+
+Jacoco  report is in: <b>target/site/jacoco/index.html</b>
 
 Adicionally it will generate the API REST documentacion in <b>target/generated-docs/api-guide.html</b>
+
+2) For generates the javadoc documentation:<br>
+$ mvn javadoc:javadoc
+
+The javadoc documentation will be generate in: <b>target/site/apidocs/index.html</b>
 
 ## The project meets the following requirements:
 

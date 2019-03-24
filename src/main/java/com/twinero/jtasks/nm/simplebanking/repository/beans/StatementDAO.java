@@ -19,6 +19,10 @@ import org.springframework.lang.NonNull;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.twinero.jtasks.nm.simplebanking.utils.MoneySerializer;
 
+/**
+ * DAO entity that contains the data for a client statement in the statements table.
+ * @author Nestor Marcano.
+ */
 @Entity
 @Table(name = "statements")
 @EntityListeners(AuditingEntityListener.class)

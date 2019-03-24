@@ -6,6 +6,11 @@ import javax.validation.constraints.NotBlank;
 
 import org.springframework.lang.NonNull;
 
+/**
+ * Implements the DTO deposit object.
+ * @author Nestor Marcano.
+ */
+// --------------------------------------------------------------------------------------------------------------------
 public class DepositReqDTO
 {
 	private DepositDTO depositDTO;

@@ -8,6 +8,11 @@ import javax.validation.constraints.Pattern;
 
 import com.twinero.jtasks.nm.simplebanking.repository.beans.ClientBaseObject;
 
+/**
+ * Implements the Session domain object for the Simple Bank application.
+ * @author Nestor Marcano.
+ */
+// --------------------------------------------------------------------------------------------------------------------
 public class Session extends ClientBaseObject
 {
 	public static final String emailRegExp = "^[\\w!#$%&'*+/=?`{|}~^-]+(?:\\.[\\w!#$%&'*+/=?`{|}~^-]+)*"
