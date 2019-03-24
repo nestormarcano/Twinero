@@ -199,45 +199,53 @@ public class SimpleBankServiceImpl implements SimpleBankService
 
 			StatementDAO example = new StatementDAO(clientID, year, month);
 			Optional<StatementDAO> optionalStatementDAO = statementsRepository.findOne(Example.of(example));
+
+			StatementDAO statementDAO;
 			if (optionalStatementDAO.isPresent())
 			{
-				StatementDAO statementDAO = optionalStatementDAO.get();
-
-				Date since = cal.getTime();
-
-				int lastDay = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
-				cal = new GregorianCalendar(year, month, lastDay, 23, 59, 59);
-				cal.set(Calendar.MILLISECOND, 999);
-
-				Date until = cal.getTime();
-
-				List<MovementDAO> movementsDAO = movementsRepository
-						.findByCustomerAndTimeBetween(clientID, since, until);
-
-				BigDecimal available = new BigDecimal(statementDAO.getFinalAmount().doubleValue());
-
-				for (MovementDAO movementDAO : movementsDAO)
-				{
-					available = available.add(movementDAO.getType() == MovementDAO.Type.DEPOSIT
-							? movementDAO.getAmount()
-							: movementDAO.getAmount().negate());
-
-					available = available.add(movementDAO.getTax().negate());
-				}
-
-				available = available.setScale(2, BigDecimal.ROUND_UP);
-
-				Balance balance = new Balance();
-				balance.setAvailable(available);
-				balance.setTotal(available);
-				balance.setBlocked(new BigDecimal(0));
-				balance.setDeferred(new BigDecimal(0));
-				balance.setClientID(clientID);
-				balance.setDate(new Date());
-
-				return new BalanceResp(balance, BalanceResp.SessionStatus.OK);
+				statementDAO = optionalStatementDAO.get();
 			}
-			else return new BalanceResp(new Balance(), BalanceResp.SessionStatus.OK);
+			else
+			{
+				statementDAO = new StatementDAO();
+				statementDAO.setFinalAmount(BigDecimal.ZERO);
+			}
+
+			Date since = cal.getTime();
+
+			int lastDay = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
+			cal = new GregorianCalendar(year, month, lastDay, 23, 59, 59);
+			cal.set(Calendar.MILLISECOND, 999);
+
+			Date until = cal.getTime();
+
+			List<MovementDAO> movementsDAO = movementsRepository
+					.findByCustomerAndTimeBetween(clientID, since, until);
+
+			BigDecimal available = new BigDecimal(statementDAO.getFinalAmount().doubleValue());
+
+			for (MovementDAO movementDAO : movementsDAO)
+			{
+				available = available.add(movementDAO.getType() == MovementDAO.Type.DEPOSIT
+						? movementDAO.getAmount()
+						: movementDAO.getAmount().negate());
+
+				available = available.add(movementDAO.getTax().negate());
+			}
+
+			available = available.setScale(2, BigDecimal.ROUND_UP);
+
+			Balance balance = new Balance();
+			balance.setAvailable(available);
+			balance.setTotal(available);
+			balance.setBlocked(new BigDecimal(0));
+			balance.setDeferred(new BigDecimal(0));
+			balance.setClientID(clientID);
+			balance.setDate(new Date());
+
+			return new BalanceResp(balance, BalanceResp.SessionStatus.OK);
+
+			// else return new BalanceResp(new Balance(), BalanceResp.SessionStatus.OK);
 		}
 		else return new BalanceResp(new Balance(), BalanceResp.SessionStatus.DOES_NOT_EXIST);
 	}
