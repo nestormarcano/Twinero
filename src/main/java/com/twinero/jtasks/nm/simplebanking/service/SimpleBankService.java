@@ -1,20 +1,22 @@
 package com.twinero.jtasks.nm.simplebanking.service;
 
-import org.springframework.stereotype.Service;
+import java.util.UUID;
 
-import com.twinero.jtasks.nm.simplebanking.repository.beans.Deposit;
-import com.twinero.jtasks.nm.simplebanking.repository.beans.Session;
-import com.twinero.jtasks.nm.simplebanking.repository.beans.Sign;
-import com.twinero.jtasks.nm.simplebanking.repository.beans.Withdraw;
+import javax.validation.Valid;
+
+import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
+
+import com.twinero.jtasks.nm.simplebanking.repository.beans.SignDAO;
 import com.twinero.jtasks.nm.simplebanking.repository.exception.SimpleBankServiceException;
-import com.twinero.jtasks.nm.simplebanking.service.beans.AccountBalanceResp;
-import com.twinero.jtasks.nm.simplebanking.service.beans.AccountStatementResp;
-import com.twinero.jtasks.nm.simplebanking.service.beans.DepositResp;
-import com.twinero.jtasks.nm.simplebanking.service.beans.SignReq;
-import com.twinero.jtasks.nm.simplebanking.service.beans.SignupResp;
-import com.twinero.jtasks.nm.simplebanking.service.beans.WithdrawResp;
+import com.twinero.jtasks.nm.simplebanking.service.beans.BalanceResp;
+import com.twinero.jtasks.nm.simplebanking.service.beans.StatementResp;
+import com.twinero.jtasks.nm.simplebanking.service.beans.MovementResp;
+import com.twinero.jtasks.nm.simplebanking.service.beans.Session;
+import com.twinero.jtasks.nm.simplebanking.service.beans.Movement;
 
 @Service
+@Validated
 public interface SimpleBankService
 {
 	// -----------------------------------------------------------------------------------------------------------------
@@ -28,7 +30,7 @@ public interface SimpleBankService
 	 * @throws SimpleBankServiceException Object indicating a service error.
 	 */
 	// -----------------------------------------------------------------------------------------------------------------
-	public SignupResp signup (SignReq sign )
+	public SignDAO signup (SignDAO sign )
 		throws SimpleBankServiceException;
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -42,11 +44,11 @@ public interface SimpleBankService
 	 * @throws SimpleBankServiceException Object indicating a service error.
 	 */
 	// -----------------------------------------------------------------------------------------------------------------
-	public Session login (Session session )
+	public Session login (@Valid Session session )
 		throws SimpleBankServiceException;
 
 	// -----------------------------------------------------------------------------------------------------------------
-	// ----------------------------------------------------------------------------------------------- getAccountBalance
+	// ------------------------------------------------------------------------------------------------------ getBalance
 	/**
 	 * Gets the account balance for a client.
 	 * 
@@ -57,12 +59,12 @@ public interface SimpleBankService
 	 * @throws SimpleBankServiceException Object with the error data.
 	 */
 	// -----------------------------------------------------------------------------------------------------------------
-	public AccountBalanceResp getAccountBalance (long clientID,
-																String sessionID )
+	public BalanceResp getBalance (	long clientID,
+												UUID sessionID )
 		throws SimpleBankServiceException;
 
 	// -----------------------------------------------------------------------------------------------------------------
-	// --------------------------------------------------------------------------------------------- getAccountStatement
+	// ---------------------------------------------------------------------------------------------------- getStatement
 	/**
 	 * Gets the account statement for a client.
 	 * 
@@ -73,8 +75,8 @@ public interface SimpleBankService
 	 * @throws SimpleBankServiceException Object with the error data.
 	 */
 	// -----------------------------------------------------------------------------------------------------------------
-	public AccountStatementResp getAccountStatement (	long clientID,
-																		String sessionID )
+	public StatementResp getStatement (	long clientID,
+													UUID sessionID )
 		throws SimpleBankServiceException;
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -89,8 +91,8 @@ public interface SimpleBankService
 	 * @throws SimpleBankServiceException Object with the error data.
 	 */
 	// -----------------------------------------------------------------------------------------------------------------
-	public DepositResp doDeposit (Deposit deposit,
-											String sessionID )
+	public MovementResp doDeposit (	Movement deposit,
+												UUID sessionID )
 		throws SimpleBankServiceException;
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -99,7 +101,7 @@ public interface SimpleBankService
 	 * {@inheritDoc}
 	 */
 	// -----------------------------------------------------------------------------------------------------------------
-	public WithdrawResp doWithdraw (	Withdraw depositForReq,
-												String sessionID )
+	public MovementResp doWithdraw (	Movement depositForReq,
+												UUID sessionID )
 		throws SimpleBankServiceException;
 }

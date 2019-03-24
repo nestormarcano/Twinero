@@ -14,14 +14,16 @@ import org.springframework.http.MediaType;
 
 import org.springframework.test.web.servlet.MockMvc;
 
-import com.twinero.jtasks.nm.simplebanking.repository.beans.Deposit;
-import com.twinero.jtasks.nm.simplebanking.repository.beans.Session;
 import com.twinero.jtasks.nm.simplebanking.repository.exception.SimpleBankServiceException;
 import com.twinero.jtasks.nm.simplebanking.service.SimpleBankService;
-import com.twinero.jtasks.nm.simplebanking.service.beans.DepositResp;
+import com.twinero.jtasks.nm.simplebanking.service.beans.MovementResp;
+import com.twinero.jtasks.nm.simplebanking.service.beans.Session;
+import com.twinero.jtasks.nm.simplebanking.service.beans.Movement;
 import com.twinero.jtasks.nm.simplebanking.utils.Util;
 import com.twinero.jtasks.nm.simplebanking.web.SimpleBankingController;
-import com.twinero.jtasks.nm.simplebanking.web.beans.DepositReq;
+import com.twinero.jtasks.nm.simplebanking.web.beans.DepositDTO;
+import com.twinero.jtasks.nm.simplebanking.web.beans.DepositReqDTO;
+import com.twinero.jtasks.nm.simplebanking.web.beans.DepositRespDTO;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.mockito.Mockito.only;
@@ -35,13 +37,21 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.UUID;
 
 @RunWith(SpringRunner.class)
 @WebMvcTest(SimpleBankingController.class)
 @AutoConfigureRestDocs(outputDir = "target/snippets")
 public class WebLayerDepositTest
 {
+	private static final String TIME_ZONE = "GMT-4";
+	private static final String DATE_STRING = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
+	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat(DATE_STRING);
+	private static final String CONTENT_TYPE = "application/json;charset=UTF-8";
+	private static final String CHARACTER_ENCODING = "UTF-8";
+
 	@Autowired
 	private MockMvc mockMvc;
 
@@ -60,45 +70,67 @@ public class WebLayerDepositTest
 		throws Exception
 	{
 		long clientID = 10;
-		Session session = new Session("5dd35b40-2410-11e9-b56e-0800200c9a66");
+		String sessionID = "5dd35b40-2410-11e9-b56e-0800200c9a66";
+		UUID uuidSession = UUID.fromString(sessionID);
+
+		Session session = new Session(sessionID);
 		session.setClientID(clientID);
 
 		// time = 2019-02-24T14:00:27.87-04:00
 		Date time = new Date(1551031227087L);
 
-		Deposit deposit = new Deposit();
+		Movement deposit = new Movement();
 		deposit.setClientID(session.getClientID());
-		deposit.setMount(new BigDecimal(1250.25));
+		deposit.setAmount(new BigDecimal(1250.25));
 		deposit.setTime(time);
-		DepositReq depositReq = new DepositReq(deposit, session.getSessionID());
+
+		DepositDTO depositDTO = new DepositDTO();
+		depositDTO.setClientID(session.getClientID());
+		depositDTO.setAmount(new BigDecimal(1250.25));
+		depositDTO.setDateTime(time, DATE_FORMAT, TIME_ZONE);
+		DepositReqDTO depositReqDTO = new DepositReqDTO(depositDTO, session.getSessionID());
 
 		long expectedDepositID = 123;
 		BigDecimal expectedMount = new BigDecimal(1250.25);
 		String expectedReference = "165432876";
 
-		Deposit expectedDeposit = new Deposit(expectedDepositID);
+		Movement expectedDeposit = new Movement(expectedDepositID);
 		expectedDeposit.setClientID(session.getClientID());
-		expectedDeposit.setMount(expectedMount);
+		expectedDeposit.setAmount(expectedMount);
 		expectedDeposit.setTime(time);
 		expectedDeposit.setReference(expectedReference);
-		DepositResp expectedDepositResp = new DepositResp(expectedDeposit, DepositResp.Status.OK);
+		expectedDeposit.setType(Movement.Type.DEPOSIT);
+		MovementResp expectedDepositResp = new MovementResp(expectedDeposit, MovementResp.SessionStatus.OK);
 
-		when(service.doDeposit(deposit, session.getSessionID())).thenReturn((expectedDepositResp));
+		DepositDTO expectedDepositDTO = new DepositDTO(expectedDepositID);
+		expectedDepositDTO.setClientID(session.getClientID());
+		expectedDepositDTO.setAmount(expectedMount);
+		expectedDepositDTO.setDateTime(time, DATE_FORMAT, TIME_ZONE);
+		expectedDepositDTO.setReference(expectedReference);
+		DepositRespDTO expectedDepositRespDTO = new DepositRespDTO(expectedDepositDTO, DepositRespDTO.SessionStatus.OK);
 
-		this.mockMvc
-				.perform(post("/simpleBanking/deposits")
-						.contentType(MediaType.APPLICATION_JSON)
-						.content(Util.asJsonString(depositReq, Deposit.DATE_FORMAT))
-						.characterEncoding("UTF-8"))
-				.andDo(print())
-				.andExpect(status().isCreated())
-				.andExpect(
-						content().string(containsString(Util.asJsonString(expectedDepositResp, Deposit.DATE_FORMAT))))
-				.andExpect(content().contentType("application/json;charset=UTF-8"))
-				.andDo(document("deposits/deposit"))
-				.andReturn();
+		when(service.doDeposit(deposit, uuidSession)).thenReturn((expectedDepositResp));
 
-		verify(service, only()).doDeposit(deposit, session.getSessionID());
+		try
+		{
+			this.mockMvc
+					.perform(post("/simpleBanking/deposits")
+							.contentType(MediaType.APPLICATION_JSON)
+							.content(Util.asJsonString(depositReqDTO))
+							.characterEncoding(CHARACTER_ENCODING))
+					.andDo(print())
+					.andExpect(status().isCreated())
+					.andExpect(content().string(containsString(Util.asJsonString(expectedDepositRespDTO))))
+					.andExpect(content().contentType(CONTENT_TYPE))
+					.andDo(document("deposits/deposit"))
+					.andReturn();
+		}
+		catch (Exception ex)
+		{
+			ex.printStackTrace();
+		}
+
+		verify(service, only()).doDeposit(deposit, uuidSession);
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -113,37 +145,47 @@ public class WebLayerDepositTest
 		throws Exception
 	{
 		long clientID = 10;
-		Session session = new Session("5dd35b40-2410-11e9-b56e-0800200c9a66");
+		String sessionID = "5dd35b40-2410-11e9-b56e-0800200c9a66";
+		UUID uuidSession = UUID.fromString(sessionID);
+
+		Session session = new Session(sessionID);
 		session.setClientID(clientID);
 
 		// time = 2019-02-24T14:00:27.87-04:00
 		Date time = new Date(1551031227087L);
 
-		Deposit deposit = new Deposit();
+		Movement deposit = new Movement();
 		deposit.setClientID(session.getClientID());
-		deposit.setMount(new BigDecimal(1250.25));
+		deposit.setAmount(new BigDecimal(1250.25));
 		deposit.setTime(time);
-		DepositReq depositReq = new DepositReq(deposit, session.getSessionID());
 
-		Deposit expectedDeposit = new Deposit();
-		DepositResp expectedDepositResp = new DepositResp(expectedDeposit, DepositResp.Status.INVALID_CLIENT);
+		DepositDTO depositDTO = new DepositDTO();
+		depositDTO.setClientID(session.getClientID());
+		depositDTO.setAmount(new BigDecimal(1250.25));
+		depositDTO.setDateTime(time, DATE_FORMAT, TIME_ZONE);
+		DepositReqDTO depositReqDTO = new DepositReqDTO(depositDTO, session.getSessionID());
 
-		when(service.doDeposit(deposit, session.getSessionID())).thenReturn((expectedDepositResp));
+		Movement expectedDeposit = new Movement();
+		MovementResp expectedDepositResp = new MovementResp(expectedDeposit, MovementResp.SessionStatus.OK);
+
+		DepositDTO expectedDepositDTO = new DepositDTO();
+		DepositRespDTO expectedDepositRespDTO = new DepositRespDTO(expectedDepositDTO, DepositRespDTO.SessionStatus.OK);
+
+		when(service.doDeposit(deposit, uuidSession)).thenReturn((expectedDepositResp));
 
 		this.mockMvc
 				.perform(post("/simpleBanking/deposits")
 						.contentType(MediaType.APPLICATION_JSON)
-						.content(Util.asJsonString(depositReq, Deposit.DATE_FORMAT))
-						.characterEncoding("UTF-8"))
+						.content(Util.asJsonString(depositReqDTO))
+						.characterEncoding(CHARACTER_ENCODING))
 				.andDo(print())
 				.andExpect(status().isConflict())
-				.andExpect(
-						content().string(containsString(Util.asJsonString(expectedDepositResp, Deposit.DATE_FORMAT))))
-				.andExpect(content().contentType("application/json;charset=UTF-8"))
+				.andExpect(content().string(containsString(Util.asJsonString(expectedDepositRespDTO))))
+				.andExpect(content().contentType(CONTENT_TYPE))
 				.andDo(document("deposits/invalidClient"))
 				.andReturn();
 
-		verify(service, only()).doDeposit(deposit, session.getSessionID());
+		verify(service, only()).doDeposit(deposit, uuidSession);
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -158,37 +200,44 @@ public class WebLayerDepositTest
 		throws Exception
 	{
 		long clientID = 10;
-		Session session = new Session("5dd35b40-2410-11e9-b56e-0800200c9a66");
+		String sessionID = "5dd35b40-2410-11e9-b56e-0800200c9a66";
+		UUID uuidSession = UUID.fromString(sessionID);
+
+		Session session = new Session(sessionID);
 		session.setClientID(clientID);
 
 		// time = 2019-02-24T14:00:27.87-04:00
 		Date time = new Date(1551031227087L);
 
-		Deposit deposit = new Deposit();
+		Movement deposit = new Movement();
 		deposit.setClientID(session.getClientID());
-		deposit.setMount(new BigDecimal(1250.25));
+		deposit.setAmount(new BigDecimal(1250.25));
 		deposit.setTime(time);
-		DepositReq depositReq = new DepositReq(deposit, session.getSessionID());
 
-		Deposit expectedDeposit = new Deposit();
-		DepositResp expectedDepositResp = new DepositResp(expectedDeposit, DepositResp.Status.SESSION_EXPIRED);
+		DepositDTO depositDTO = new DepositDTO();
+		depositDTO.setClientID(session.getClientID());
+		depositDTO.setAmount(new BigDecimal(1250.25));
+		depositDTO.setDateTime(time, DATE_FORMAT, TIME_ZONE);
+		DepositReqDTO depositReqDTO = new DepositReqDTO(depositDTO, session.getSessionID());
 
-		when(service.doDeposit(deposit, session.getSessionID())).thenReturn((expectedDepositResp));
+		MovementResp expectedDepositResp = new MovementResp(null, MovementResp.SessionStatus.EXPIRED);
+		DepositRespDTO expectedDepositRespDTO = new DepositRespDTO(null, DepositRespDTO.SessionStatus.EXPIRED);
+
+		when(service.doDeposit(deposit, uuidSession)).thenReturn((expectedDepositResp));
 
 		this.mockMvc
 				.perform(post("/simpleBanking/deposits")
 						.contentType(MediaType.APPLICATION_JSON)
-						.content(Util.asJsonString(depositReq, Deposit.DATE_FORMAT))
-						.characterEncoding("UTF-8"))
+						.content(Util.asJsonString(depositReqDTO))
+						.characterEncoding(CHARACTER_ENCODING))
 				.andDo(print())
 				.andExpect(status().isUnauthorized())
-				.andExpect(
-						content().string(containsString(Util.asJsonString(expectedDepositResp, Deposit.DATE_FORMAT))))
-				.andExpect(content().contentType("application/json;charset=UTF-8"))
+				.andExpect(content().string(containsString(Util.asJsonString(expectedDepositRespDTO))))
+				.andExpect(content().contentType(CONTENT_TYPE))
 				.andDo(document("deposits/expiredSession"))
 				.andReturn();
 
-		verify(service, only()).doDeposit(deposit, session.getSessionID());
+		verify(service, only()).doDeposit(deposit, uuidSession);
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -203,37 +252,44 @@ public class WebLayerDepositTest
 		throws Exception
 	{
 		long clientID = 10;
-		Session session = new Session("5dd35b40-2410-11e9-b56e-0800200c9a66");
+		String sessionID = "5dd35b40-2410-11e9-b56e-0800200c9a66";
+		UUID uuidSession = UUID.fromString(sessionID);
+
+		Session session = new Session(sessionID);
 		session.setClientID(clientID);
 
 		// time = 2019-02-24T14:00:27.87-04:00
 		Date time = new Date(1551031227087L);
 
-		Deposit deposit = new Deposit();
+		Movement deposit = new Movement();
 		deposit.setClientID(session.getClientID());
-		deposit.setMount(new BigDecimal(1250.25));
+		deposit.setAmount(new BigDecimal(1250.25));
 		deposit.setTime(time);
-		DepositReq depositReq = new DepositReq(deposit, session.getSessionID());
 
-		Deposit expectedDeposit = new Deposit();
-		DepositResp expectedDepositResp = new DepositResp(expectedDeposit, DepositResp.Status.SESSION_DOES_NOT_EXIST);
+		DepositDTO depositDTO = new DepositDTO();
+		depositDTO.setClientID(session.getClientID());
+		depositDTO.setAmount(new BigDecimal(1250.25));
+		depositDTO.setDateTime(time, DATE_FORMAT, TIME_ZONE);
+		DepositReqDTO depositReqDTO = new DepositReqDTO(depositDTO, session.getSessionID());
 
-		when(service.doDeposit(deposit, session.getSessionID())).thenReturn((expectedDepositResp));
+		MovementResp expectedDepositResp = new MovementResp(null, MovementResp.SessionStatus.DOES_NOT_EXIST);
+		DepositRespDTO expectedDepositRespDTO = new DepositRespDTO(null, DepositRespDTO.SessionStatus.DOES_NOT_EXIST);
+
+		when(service.doDeposit(deposit, uuidSession)).thenReturn((expectedDepositResp));
 
 		this.mockMvc
 				.perform(post("/simpleBanking/deposits")
 						.contentType(MediaType.APPLICATION_JSON)
-						.content(Util.asJsonString(depositReq, Deposit.DATE_FORMAT))
-						.characterEncoding("UTF-8"))
+						.content(Util.asJsonString(depositReqDTO))
+						.characterEncoding(CHARACTER_ENCODING))
 				.andDo(print())
 				.andExpect(status().isUnauthorized())
-				.andExpect(
-						content().string(containsString(Util.asJsonString(expectedDepositResp, Deposit.DATE_FORMAT))))
-				.andExpect(content().contentType("application/json;charset=UTF-8"))
+				.andExpect(content().string(containsString(Util.asJsonString(expectedDepositRespDTO))))
+				.andExpect(content().contentType(CONTENT_TYPE))
 				.andDo(document("deposits/sessionDoesNotExist"))
 				.andReturn();
 
-		verify(service, only()).doDeposit(deposit, session.getSessionID());
+		verify(service, only()).doDeposit(deposit, uuidSession);
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -248,36 +304,42 @@ public class WebLayerDepositTest
 		throws Exception
 	{
 		long clientID = 10;
-		Session session = new Session("5dd35b40-2410-11e9-b56e-0800200c9a66");
+		String sessionID = "5dd35b40-2410-11e9-b56e-0800200c9a66";
+		UUID uuidSession = UUID.fromString(sessionID);
+
+		Session session = new Session(sessionID);
 		session.setClientID(clientID);
 
 		// time = 2019-02-24T14:00:27.87-04:00
 		Date time = new Date(1551031227087L);
 
-		Deposit deposit = new Deposit();
+		Movement deposit = new Movement();
 		deposit.setClientID(session.getClientID());
-		deposit.setMount(new BigDecimal(1250.25));
+		deposit.setAmount(new BigDecimal(1250.25));
 		deposit.setTime(time);
-		DepositReq depositReq = new DepositReq(deposit, session.getSessionID());
 
-		Deposit expectedDeposit = new Deposit();
-		DepositResp expectedDepositResp = new DepositResp(expectedDeposit, DepositResp.Status.SERVER_ERROR);
+		DepositDTO depositDTO = new DepositDTO();
+		depositDTO.setClientID(session.getClientID());
+		depositDTO.setAmount(new BigDecimal(1250.25));
+		depositDTO.setDateTime(time, DATE_FORMAT, TIME_ZONE);
+		DepositReqDTO depositReqDTO = new DepositReqDTO(depositDTO, session.getSessionID());
 
-		when(service.doDeposit(deposit, session.getSessionID())).thenThrow(SimpleBankServiceException.class);
+		DepositRespDTO expectedDepositRespDTO = new DepositRespDTO(null, DepositRespDTO.SessionStatus.UNDEFINED);
+
+		when(service.doDeposit(deposit, uuidSession)).thenThrow(SimpleBankServiceException.class);
 
 		this.mockMvc
 				.perform(post("/simpleBanking/deposits")
 						.contentType(MediaType.APPLICATION_JSON)
-						.content(Util.asJsonString(depositReq, Deposit.DATE_FORMAT))
-						.characterEncoding("UTF-8"))
+						.content(Util.asJsonString(depositReqDTO))
+						.characterEncoding(CHARACTER_ENCODING))
 				.andDo(print())
 				.andExpect(status().is5xxServerError())
-				.andExpect(
-						content().string(containsString(Util.asJsonString(expectedDepositResp, Deposit.DATE_FORMAT))))
-				.andExpect(content().contentType("application/json;charset=UTF-8"))
+				.andExpect(content().string(containsString(Util.asJsonString(expectedDepositRespDTO))))
+				.andExpect(content().contentType(CONTENT_TYPE))
 				.andDo(document("deposits/serverError"))
 				.andReturn();
 
-		verify(service, only()).doDeposit(deposit, session.getSessionID());
+		verify(service, only()).doDeposit(deposit, uuidSession);
 	}
 }

@@ -36,11 +36,17 @@ include::{snippets}/signups/notSignup/http-request.adoc[]
 ==== Response
 include::{snippets}/signups/notSignup/http-response.adoc[]
 
-=== Malformed sign-up
+=== Malformed sign-up (email)
 ==== Request
 include::{snippets}/signups/notSignupMalformedEmail/http-request.adoc[]
 ==== Response
 include::{snippets}/signups/notSignupMalformedEmail/http-response.adoc[]
+
+=== Malformed sign-up (password)
+==== Request
+include::{snippets}/signups/notSignupMalformedPassword/http-request.adoc[]
+==== Response
+include::{snippets}/signups/notSignupMalformedPassword/http-response.adoc[]
 
 === Server error
 ==== Request

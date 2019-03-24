@@ -14,11 +14,13 @@ import org.springframework.http.MediaType;
 
 import org.springframework.test.web.servlet.MockMvc;
 
-import com.twinero.jtasks.nm.simplebanking.repository.beans.Session;
 import com.twinero.jtasks.nm.simplebanking.repository.exception.SimpleBankServiceException;
 import com.twinero.jtasks.nm.simplebanking.service.SimpleBankService;
+import com.twinero.jtasks.nm.simplebanking.service.beans.Session;
 import com.twinero.jtasks.nm.simplebanking.utils.Util;
 import com.twinero.jtasks.nm.simplebanking.web.SimpleBankingController;
+import com.twinero.jtasks.nm.simplebanking.web.beans.SessionReqDTO;
+import com.twinero.jtasks.nm.simplebanking.web.beans.SessionRespDTO;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.mockito.Mockito.only;
@@ -57,30 +59,37 @@ public class WebLayerSessionsTest
 	{
 		String email = "nestor.marcano@gmail.com";
 		String password = "123456";
-		Session session = new Session(email, password);
+		
+		SessionReqDTO sessionReqDTO = new SessionReqDTO(email, password);
+		Session serviceSession = new Session(email, password);
+		Session expectedServiceSession = new Session("5dd35b40-2410-11e9-b56e-0800200c9a66");
+		SessionRespDTO expectedSessionRespDTO = new SessionRespDTO("5dd35b40-2410-11e9-b56e-0800200c9a66");
 
 		long clientID = 10;
-		Session expectedSession = new Session("5dd35b40-2410-11e9-b56e-0800200c9a66");
-		expectedSession.setClientID(clientID);
-		expectedSession.setEmail(email);
-		expectedSession.setPassword("*****");
-		expectedSession.setSessionStatus(Session.Status.OK);
 		
-		when(service.login(session)).thenReturn(expectedSession);
+		expectedServiceSession.setClientID(clientID);
+		expectedServiceSession.setEmail(email);
+		expectedServiceSession.setSessionStatus(Session.Status.OK);
+		
+		expectedSessionRespDTO.setClientID(clientID);
+		expectedSessionRespDTO.setEmail(email);
+		expectedSessionRespDTO.setSessionStatus(SessionRespDTO.Status.OK);
+		
+		when(service.login(serviceSession)).thenReturn(expectedServiceSession);
 
 		this.mockMvc
 				.perform(post("/simpleBanking/sessions")
 						.contentType(MediaType.APPLICATION_JSON)
-						.content(Util.asJsonString(session))
+						.content(Util.asJsonString(sessionReqDTO))
 						.characterEncoding("UTF-8"))
 				.andDo(print())
 				.andExpect(status().isCreated())
-				.andExpect(content().string(containsString(Util.asJsonString(expectedSession))))
+				.andExpect(content().string(containsString(Util.asJsonString(expectedSessionRespDTO))))
 				.andExpect(content().contentType("application/json;charset=UTF-8"))
 				.andDo(document("sessions/login"))
 				.andReturn();
 		
-		verify(service, only()).login(session);
+		verify(service, only()).login(serviceSession);
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -97,26 +106,30 @@ public class WebLayerSessionsTest
 	{
 		String email = "pedro.marcano@gmail.com";
 		String password = "123456";
-		Session session = new Session(email, password);
 		
-		Session expectedSession = new Session();
-		expectedSession.setSessionStatus(Session.Status.UNAUTHORIZED);
+		SessionReqDTO sessionReqDTO = new SessionReqDTO(email, password);
+		Session serviceSession = new Session(email, password);
+		Session expectedServiceSession = new Session();
+		SessionRespDTO expectedSessionRespDTO = new SessionRespDTO();
 		
-		when(service.login(session)).thenReturn(expectedSession);
+		expectedServiceSession.setSessionStatus(Session.Status.UNAUTHORIZED);
+		expectedSessionRespDTO.setSessionStatus(SessionRespDTO.Status.UNAUTHORIZED);
+		
+		when(service.login(serviceSession)).thenReturn(expectedServiceSession);
 
 		this.mockMvc
 				.perform(post("/simpleBanking/sessions")
 						.contentType(MediaType.APPLICATION_JSON)
-						.content(Util.asJsonString(session))
+						.content(Util.asJsonString(sessionReqDTO))
 						.characterEncoding("UTF-8"))
 				.andDo(print())
 				.andExpect(status().isUnauthorized())
-				.andExpect(content().string(containsString(Util.asJsonString(expectedSession))))
+				.andExpect(content().string(containsString(Util.asJsonString(expectedSessionRespDTO))))
 				.andExpect(content().contentType("application/json;charset=UTF-8"))
 				.andDo(document("sessions/notLogin"))
 				.andReturn();
 		
-		verify(service, only()).login(session);
+		verify(service, only()).login(serviceSession);
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -132,24 +145,28 @@ public class WebLayerSessionsTest
 		throws Exception
 	{
 		String email = "nestor marcano gmail.com";
-		String password = "123 456";
+		String password = "123456";
 		
-		Session session = new Session(email, password);
-		Session expectedSession = new Session();
+		SessionReqDTO sessionReqDTO = new SessionReqDTO(email, password);
+		Session serviceSession = new Session(email, password);
+		
+		String uriRequested = "/simpleBanking/sessions";
+		//String message = SessionReqDTO.emailRegExp;
 
 		this.mockMvc
-				.perform(post("/simpleBanking/sessions")
+				.perform(post(uriRequested)
 						.contentType(MediaType.APPLICATION_JSON)
-						.content(Util.asJsonString(session))
+						.content(Util.asJsonString(sessionReqDTO))
 						.characterEncoding("UTF-8"))
 				.andDo(print())
 				.andExpect(status().isBadRequest())
-				.andExpect(content().string(containsString(Util.asJsonString(expectedSession))))
+				//.andExpect(content().string(containsString(message)))
+				.andExpect(content().string(containsString(uriRequested)))
 				.andExpect(content().contentType("application/json;charset=UTF-8"))
 				.andDo(document("sessions/notLoginMalformedEmail"))
 				.andReturn();
 		
-		verify(service, times(0)).login(session);
+		verify(service, times(0)).login(serviceSession);
 	}
 	
 	// -----------------------------------------------------------------------------------------------------------------
@@ -166,23 +183,24 @@ public class WebLayerSessionsTest
 		String email = "nestor.marcano@gmail.com";
 		String password = "123456";
 		
-		Session session = new Session(email, password);
-		Session expectedSession = new Session();
+		SessionReqDTO sessionReqDTO = new SessionReqDTO(email, password);
+		Session serviceSession = new Session(email, password);
+		SessionRespDTO expectedSessionRespDTO = new SessionRespDTO();
 		
-		when(service.login(session)).thenThrow(SimpleBankServiceException.class);
+		when(service.login(serviceSession)).thenThrow(SimpleBankServiceException.class);
 
 		this.mockMvc
 				.perform(post("/simpleBanking/sessions")
 						.contentType(MediaType.APPLICATION_JSON)
-						.content(Util.asJsonString(session))
+						.content(Util.asJsonString(sessionReqDTO))
 						.characterEncoding("UTF-8"))
 				.andDo(print())
 				.andExpect(status().is5xxServerError())
-				.andExpect(content().string(containsString(Util.asJsonString(expectedSession))))
+				.andExpect(content().string(containsString(Util.asJsonString(expectedSessionRespDTO))))
 				.andExpect(content().contentType("application/json;charset=UTF-8"))
 				.andDo(document("sessions/notLoginServerError"))
 				.andReturn();
 		
-		verify(service, only()).login(session);
+		verify(service, only()).login(serviceSession);
 	}
 }

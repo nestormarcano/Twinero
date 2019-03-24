@@ -9,8 +9,8 @@ public abstract class ClientBaseObject
 	public ClientBaseObject ()
 	{
 	}
-	
-	public ClientBaseObject (long theClientID)
+
+	public ClientBaseObject ( long theClientID )
 	{
 		this.clientID = theClientID;
 	}
@@ -21,12 +21,6 @@ public abstract class ClientBaseObject
 	@Override
 	public boolean equals (Object obj )
 	{
-		if (super.equals(obj))
-			return true;
-
-		if ((obj == null) || !this.getClass().equals(obj.getClass()))
-		{ return false; }
-
 		final ClientBaseObject other = (ClientBaseObject) obj;
 		return (Objects.equals(this.clientID, other.clientID));
 	}

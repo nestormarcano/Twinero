@@ -2,23 +2,11 @@ package com.twinero.jtasks.nm.simplebanking.repository;
 
 import org.springframework.stereotype.Repository;
 
-import com.twinero.jtasks.nm.simplebanking.repository.beans.Sign;
-import com.twinero.jtasks.nm.simplebanking.repository.exception.SimpleBankServiceException;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.twinero.jtasks.nm.simplebanking.repository.beans.SignDAO;
 
 @Repository
-public interface SignupsRepository
+public interface SignupsRepository extends JpaRepository<SignDAO, Long>
 {
-	// -----------------------------------------------------------------------------------------------------------------
-	// ------------------------------------------------------------------------------------------------------------- add
-	/**
-	 * Adds a sign-up in the system.
-	 * 
-	 * @param sign The signing data.
-	 * 
-	 * @return Object with the response data.
-	 * @throws SimpleBankServiceException Object indicating a service error.
-	 */
-	// -----------------------------------------------------------------------------------------------------------------
-	public Sign add (Sign sign )
-		throws SimpleBankServiceException;
 }

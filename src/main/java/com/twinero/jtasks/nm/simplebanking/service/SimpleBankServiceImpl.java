@@ -1,76 +1,77 @@
 package com.twinero.jtasks.nm.simplebanking.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import java.math.BigDecimal;
+import java.math.MathContext;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.HashSet;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 
-import com.twinero.jtasks.nm.simplebanking.repository.AccountBalancesRepository;
-import com.twinero.jtasks.nm.simplebanking.repository.AccountStatementsRepository;
-import com.twinero.jtasks.nm.simplebanking.repository.DepositsRepository;
+import javax.validation.ConstraintViolation;
+import javax.validation.Valid;
+import javax.validation.Validator;
+
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
+import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
+
+import com.twinero.jtasks.nm.simplebanking.repository.MovementsRepository;
 import com.twinero.jtasks.nm.simplebanking.repository.SessionsRepository;
 import com.twinero.jtasks.nm.simplebanking.repository.SignupsRepository;
-import com.twinero.jtasks.nm.simplebanking.repository.WithdrawsRepository;
-import com.twinero.jtasks.nm.simplebanking.repository.beans.AccountBalance;
-import com.twinero.jtasks.nm.simplebanking.repository.beans.AccountStatement;
-import com.twinero.jtasks.nm.simplebanking.repository.beans.Deposit;
-import com.twinero.jtasks.nm.simplebanking.repository.beans.Session;
-import com.twinero.jtasks.nm.simplebanking.repository.beans.Sign;
-import com.twinero.jtasks.nm.simplebanking.repository.beans.Withdraw;
+import com.twinero.jtasks.nm.simplebanking.repository.StatementsRepository;
+import com.twinero.jtasks.nm.simplebanking.repository.beans.StatementDAO;
+import com.twinero.jtasks.nm.simplebanking.repository.beans.MovementDAO;
+import com.twinero.jtasks.nm.simplebanking.repository.beans.SessionDAO;
+import com.twinero.jtasks.nm.simplebanking.repository.beans.SignDAO;
+import com.twinero.jtasks.nm.simplebanking.repository.beans.annotations.UniqueEmail;
 import com.twinero.jtasks.nm.simplebanking.repository.exception.SimpleBankServiceException;
-import com.twinero.jtasks.nm.simplebanking.service.beans.AccountBalanceResp;
-import com.twinero.jtasks.nm.simplebanking.service.beans.AccountStatementResp;
-import com.twinero.jtasks.nm.simplebanking.service.beans.DepositResp;
-import com.twinero.jtasks.nm.simplebanking.service.beans.SignReq;
-import com.twinero.jtasks.nm.simplebanking.service.beans.SignupResp;
-import com.twinero.jtasks.nm.simplebanking.service.beans.WithdrawResp;
-import com.twinero.jtasks.nm.simplebanking.utils.Util;
+import com.twinero.jtasks.nm.simplebanking.service.beans.Balance;
+import com.twinero.jtasks.nm.simplebanking.service.beans.BalanceResp;
+import com.twinero.jtasks.nm.simplebanking.service.beans.Statement;
+import com.twinero.jtasks.nm.simplebanking.service.beans.StatementResp;
+import com.twinero.jtasks.nm.simplebanking.service.beans.MovementResp;
+import com.twinero.jtasks.nm.simplebanking.service.beans.Session;
+import com.twinero.jtasks.nm.simplebanking.service.beans.Movement;
 
 @Service
+@Validated
 public class SimpleBankServiceImpl implements SimpleBankService
-{	
+{
 	@Autowired
 	private SignupsRepository signupsRepository;
-	
+
 	@Autowired
 	private SessionsRepository sessionsRepository;
-	
-	@Autowired
-	private AccountBalancesRepository accountBalancesRepository;
-	
-	@Autowired
-	private AccountStatementsRepository accountStatementsRepository;
-	
-	@Autowired
-	private DepositsRepository depositsRepository;
-	
-	@Autowired
-	private WithdrawsRepository withdrawsRepository;
 
-	// -----------------------------------------------------------------------------------------------------------------
-	// ------------------------------------------------------------------------------------------- SimpleBankServiceImpl
-	/**
-	 * Constructor with the repository.
-	 * 
-	 * @param theSignupsRepository The sign-ups repository.
-	 * @param theSessionsRepository The sessions repository.
-	 * @param theAccountBalancesRepository The account balances repository.
-	 * @param theAccountStatementsRepository The statements repository.
-	 * @param theDepositsRepository The Deposits repository.
-	 * @param theWithdrawsRepository The Withdraws repository.
-	 */
-	// -----------------------------------------------------------------------------------------------------------------
-	public SimpleBankServiceImpl ( SignupsRepository theSignupsRepository,
-	                               SessionsRepository theSessionsRepository,
-	                               AccountBalancesRepository theAccountBalancesRepository,
-	                               AccountStatementsRepository theAccountStatementsRepository,
-	                               DepositsRepository theDepositsRepository,
-	                               WithdrawsRepository theWithdrawsRepository)
+	// @Autowired
+	// private AccountBalancesRepository accountBalancesRepository;
+
+	@Autowired
+	private MovementsRepository movementsRepository;
+
+	@Autowired
+	private StatementsRepository statementsRepository;
+
+	@Autowired
+	private Validator validator;
+
+	private ModelMapper modelMapper;
+
+	public SimpleBankServiceImpl ()
 	{
-		this.signupsRepository = theSignupsRepository;
-		this.sessionsRepository = theSessionsRepository;
-		this.accountBalancesRepository = theAccountBalancesRepository;
-		this.accountStatementsRepository = theAccountStatementsRepository;
-		this.depositsRepository = theDepositsRepository;
-		this.withdrawsRepository = theWithdrawsRepository;
+		this.modelMapper = modelMapper();
+	}
+
+	private static ModelMapper modelMapper ()
+	{
+		return new ModelMapper();
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -80,21 +81,27 @@ public class SimpleBankServiceImpl implements SimpleBankService
 	 */
 	// -----------------------------------------------------------------------------------------------------------------
 	@Override
-	public SignupResp signup (SignReq signReq )
+	public SignDAO signup (SignDAO sign )
 		throws SimpleBankServiceException
 	{
-		if (signReq.getEmail() == null || !Util.checksEmailFormat(signReq.getEmail())
-				|| signReq.getPassword() == null || signReq.getPassword().isEmpty())
-		{ throw new SimpleBankServiceException(); }
+		Set<ConstraintViolation<SignDAO>> violations = validator.validate(sign);
+		if (violations.isEmpty())
+		{
+			return signupsRepository.save(sign);
+		}
+		else
+		{
+			for (ConstraintViolation<SignDAO> constraintViolation : violations)
+			{
+				String constrainName = constraintViolation.getConstraintDescriptor().getAnnotation().annotationType()
+						.getSimpleName();
+				String uniqueEmailClassName = UniqueEmail.class.getSimpleName();
+				if (uniqueEmailClassName.equals(constrainName))
+				{ return sign; }
+			}
+		}
 
-		Sign sign = new Sign(signReq.getEmail(), signReq.getPassword());
-		
-		sign = signupsRepository.add(sign);
-		
-		if (sign.getSignID() == 0)
-			return new SignupResp(SignupResp.Status.ALREADY_EXISTS);
-		
-		return new SignupResp(SignupResp.Status.OK);
+		throw new SimpleBankServiceException();
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -104,83 +111,207 @@ public class SimpleBankServiceImpl implements SimpleBankService
 	 */
 	// -----------------------------------------------------------------------------------------------------------------
 	@Override
-	public Session login (Session session )
+	public Session login (@Valid Session session )
 		throws SimpleBankServiceException
 	{
-		if (session.getEmail() == null || !Util.checksEmailFormat(session.getEmail())
-				|| session.getPassword() == null || session.getPassword().isEmpty())
-		{ throw new SimpleBankServiceException(); }
-
-		return sessionsRepository.add(session);
-	}
-
-	// -----------------------------------------------------------------------------------------------------------------
-	// ----------------------------------------------------------------------------------------------- getAccountBalance
-	/**
-	 * {@inheritDoc}
-	 */
-	// -----------------------------------------------------------------------------------------------------------------
-	@Override
-	public AccountBalanceResp getAccountBalance (long clientID,
-																String sessionID )
-		throws SimpleBankServiceException
-	{
-		Session estatus = sessionsRepository.get(sessionID);
-		switch (estatus.getSessionStatus())
+		try
 		{
-			case OK:
-				AccountBalance account = accountBalancesRepository.get(clientID);
-				return new AccountBalanceResp(account, AccountBalanceResp.Status.OK);
+			SignDAO toFindSignDAO = new SignDAO(session.getEmail(), null);
+			Optional<SignDAO> foundOptionalSignDAO = signupsRepository.findOne(Example.of(toFindSignDAO));
 
-			case EXPIRED:
-				return new AccountBalanceResp(new AccountBalance(), AccountBalanceResp.Status.SESSION_EXPIRED);
+			if (foundOptionalSignDAO.isPresent())
+			{
+				SignDAO foundSignDAO = foundOptionalSignDAO.get();
+				if (foundSignDAO.getPassword().equals(session.getPassword()))
+				{
+					SessionDAO sessionDAO = new SessionDAO(foundSignDAO);
+					sessionDAO = sessionsRepository.save(sessionDAO);
 
-			case NOT_EXISTS:
-				return new AccountBalanceResp(new AccountBalance(), AccountBalanceResp.Status.SESSION_DOES_NOT_EXIST);
+					session = new Session(sessionDAO.getSessionID().toString());
+					session.setClientID(foundSignDAO.getSignID());
+					session.setEmail(foundSignDAO.getEmail());
+					session.setSessionStatus(Session.Status.OK);
+					return session;
+				}
+			}
 
-			case INTERNAL_ERROR:
-				return new AccountBalanceResp(new AccountBalance(), AccountBalanceResp.Status.SERVER_ERROR);
-				
-			case UNAUTHORIZED:
-				return new AccountBalanceResp(new AccountBalance(), AccountBalanceResp.Status.UNAUTHORIZED);
+			session = new Session(Session.Status.UNAUTHORIZED);
+			session.setEmail(toFindSignDAO.getEmail());
+			return session;
+		}
 
-			default:
-				throw new SimpleBankServiceException();
+		// Error handling
+		// --------------
+		catch (NoSuchElementException ex)
+		{
+			session.setSessionStatus(Session.Status.UNAUTHORIZED);
+			session.setPassword(null);
+			return session;
+		}
+		catch (Exception ex)
+		{
+			throw new SimpleBankServiceException();
 		}
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
-	// --------------------------------------------------------------------------------------------- getAccountStatement
+	// ------------------------------------------------------------------------------------------------------ getBalance
 	/**
 	 * {@inheritDoc}
 	 */
 	// -----------------------------------------------------------------------------------------------------------------
 	@Override
-	public AccountStatementResp getAccountStatement (	long clientID,
-																		String sessionID )
+	public BalanceResp getBalance (	long clientID,
+												UUID sessionID )
 		throws SimpleBankServiceException
 	{
-		Session estatus = sessionsRepository.get(sessionID);
-		switch (estatus.getSessionStatus())
+		Optional<SessionDAO> optionalSessionDAO = sessionsRepository.findById(sessionID);
+		if (optionalSessionDAO.isPresent())
 		{
-			case OK:
-				AccountStatement account = accountStatementsRepository.get(clientID);
-				return new AccountStatementResp(account, AccountStatementResp.Status.OK);
+			SessionDAO sessionDAO = optionalSessionDAO.get();
 
-			case EXPIRED:
-				return new AccountStatementResp(new AccountStatement(), AccountStatementResp.Status.SESSION_EXPIRED);
+			if (isExpiredSession(sessionDAO))
+				return new BalanceResp(new Balance(), BalanceResp.SessionStatus.EXPIRED);
 
-			case NOT_EXISTS:
-				return new AccountStatementResp(new AccountStatement(), AccountStatementResp.Status.SESSION_DOES_NOT_EXIST);
+			Calendar cal = new GregorianCalendar();
+			int year = cal.get(Calendar.YEAR);
+			int month = cal.get(Calendar.MONTH) - 1;
+			if (month == -1)
+			{
+				month = 11;
+				year--;
+			}
+			cal = new GregorianCalendar(year, month, 1, 0, 0, 0);
 
-			case INTERNAL_ERROR:
-				return new AccountStatementResp(new AccountStatement(), AccountStatementResp.Status.SERVER_ERROR);
+			StatementDAO example = new StatementDAO(clientID, year, month);
+			Optional<StatementDAO> optionalStatementDAO = statementsRepository.findOne(Example.of(example));
+			if (optionalStatementDAO.isPresent())
+			{
+				StatementDAO statementDAO = optionalStatementDAO.get();
+
+				Date since = cal.getTime();
+
+				int lastDay = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
+				cal = new GregorianCalendar(year, month, lastDay, 23, 59, 59);
+				cal.set(Calendar.MILLISECOND, 999);
+
+				Date until = cal.getTime();
+
+				List<MovementDAO> movementsDAO = movementsRepository
+						.findByCustomerAndTimeBetween(clientID, since, until);
+
+				BigDecimal available = new BigDecimal(statementDAO.getFinalAmount().doubleValue());
 				
-			case UNAUTHORIZED:
-				return new AccountStatementResp(new AccountStatement(), AccountStatementResp.Status.UNAUTHORIZED);
+				for (MovementDAO movementDAO : movementsDAO)
+				{
+					available = available.add(movementDAO.getType() == MovementDAO.Type.DEPOSIT
+							? movementDAO.getAmount()
+							: movementDAO.getAmount().negate());
+					
+					available = available.add(movementDAO.getTax().negate());
+				}
+				
+				available = available.setScale(2, BigDecimal.ROUND_UP);
 
-			default:
-				throw new SimpleBankServiceException();
+				Balance balance = new Balance();
+				balance.setAvailable(available);
+				balance.setTotal(available);
+				balance.setBlocked(new BigDecimal(0));
+				balance.setDeferred(new BigDecimal(0));
+				balance.setClientID(clientID);
+				balance.setDate(new Date());
+
+				return new BalanceResp(balance, BalanceResp.SessionStatus.OK);
+			}
+			else return new BalanceResp(new Balance(), BalanceResp.SessionStatus.OK);
+		}
+		else return new BalanceResp(new Balance(), BalanceResp.SessionStatus.DOES_NOT_EXIST);
+	}
+
+	// -----------------------------------------------------------------------------------------------------------------
+	// ---------------------------------------------------------------------------------------------------- getStatement
+	/**
+	 * {@inheritDoc}
+	 */
+	// -----------------------------------------------------------------------------------------------------------------
+	@Override
+	public StatementResp getStatement (	long clientID,
+													UUID sessionID )
+		throws SimpleBankServiceException
+	{
+		try
+		{
+			Optional<SessionDAO> optionalSessionDAO = sessionsRepository.findById(sessionID);
+			if (optionalSessionDAO.isPresent())
+			{
+				SessionDAO sessionDAO = optionalSessionDAO.get();
+
+				if (isExpiredSession(sessionDAO))
+					return new StatementResp(null, StatementResp.SessionStatus.EXPIRED);
+
+				Calendar cal = new GregorianCalendar();
+				int year = cal.get(Calendar.YEAR);
+				int month = cal.get(Calendar.MONTH) - 1;
+				if (month == -1)
+				{
+					month = 11;
+					year--;
+				}
+				cal = new GregorianCalendar(year, month, 1, 0, 0, 0);
+
+				StatementDAO example = new StatementDAO(clientID, year, month);
+				Optional<StatementDAO> optionalStatementDAO = statementsRepository.findOne(Example.of(example));
+				if (optionalStatementDAO.isPresent())
+				{
+					StatementDAO statementDAO = optionalStatementDAO.get();
+					Statement statement = modelMapper.map(statementDAO, Statement.class);
+
+					Date since = cal.getTime();
+					statement.setSince(since);
+
+					int lastDay = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
+					cal = new GregorianCalendar(year, month, lastDay, 23, 59, 59);
+					cal.set(Calendar.MILLISECOND, 999);
+
+					Date until = cal.getTime();
+					statement.setUntil(until);
+					statement.setClientID(clientID);
+
+					List<MovementDAO> movementsDAO = movementsRepository
+							.findByCustomerAndTimeBetween(clientID, since, until);
+
+					Set<Movement> movements = new HashSet<>();
+					for (MovementDAO movementDAO : movementsDAO)
+					{
+						Movement movement = new Movement();
+						movement.setAmount(movementDAO.getAmount());
+						movement.setClientID(movementDAO.getClientID());
+						movement.setDescription(movementDAO.getDescription());
+						movement.setMovementID(movementDAO.getMovementID());
+						movement.setReference(movementDAO.getReference());
+						movement.setTax(movementDAO.getTax());
+						movement.setTime(movementDAO.getTime());
+						movement
+								.setType(movementDAO.getType() == MovementDAO.Type.DEPOSIT
+										? Movement.Type.DEPOSIT
+										: Movement.Type.WITHDRAW);
+
+						movements.add(movement);
+					}
+
+					statement.setMovements(movements);
+					return new StatementResp(statement, StatementResp.SessionStatus.OK);
+				}
+				else return new StatementResp(new Statement(), StatementResp.SessionStatus.OK);
+			}
+			else return new StatementResp(null, StatementResp.SessionStatus.DOES_NOT_EXIST);
+		}
+
+		// Error handling
+		// --------------
+		catch (Exception ex)
+		{
+			throw new SimpleBankServiceException(ex);
 		}
 	}
 
@@ -191,35 +322,12 @@ public class SimpleBankServiceImpl implements SimpleBankService
 	 */
 	// -----------------------------------------------------------------------------------------------------------------
 	@Override
-	public DepositResp doDeposit (Deposit deposit,
-											String sessionID )
+	public MovementResp doDeposit (	Movement deposit,
+												UUID sessionID )
 		throws SimpleBankServiceException
 	{
-		Session estatus = sessionsRepository.get(sessionID);
-		switch (estatus.getSessionStatus())
-		{
-			case OK:
-				deposit = depositsRepository.add(deposit);
-				if (deposit.getClientID() == 0)
-					return new DepositResp(deposit, DepositResp.Status.INVALID_CLIENT);
-				
-				return new DepositResp(deposit, DepositResp.Status.OK);
-
-			case EXPIRED:
-				return new DepositResp(new Deposit(), DepositResp.Status.SESSION_EXPIRED);
-
-			case NOT_EXISTS:
-				return new DepositResp(new Deposit(), DepositResp.Status.SESSION_DOES_NOT_EXIST);
-
-			case INTERNAL_ERROR:
-				return new DepositResp(new Deposit(), DepositResp.Status.SERVER_ERROR);
-				
-			case UNAUTHORIZED:
-				return new DepositResp(new Deposit(), DepositResp.Status.UNAUTHORIZED);
-
-			default:
-				throw new SimpleBankServiceException();
-		}
+		deposit.setType(Movement.Type.DEPOSIT);
+		return doTransaction(deposit, sessionID);
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -229,34 +337,58 @@ public class SimpleBankServiceImpl implements SimpleBankService
 	 */
 	// -----------------------------------------------------------------------------------------------------------------
 	@Override
-	public WithdrawResp doWithdraw (	Withdraw withdraw,
-												String sessionID )
+	public MovementResp doWithdraw (	Movement withdraw,
+												UUID sessionID )
 		throws SimpleBankServiceException
 	{
-		Session estatus = sessionsRepository.get(sessionID);
-		switch (estatus.getSessionStatus())
+		withdraw.setType(Movement.Type.WITHDRAW);
+		return doTransaction(withdraw, sessionID);
+	}
+
+	// -----------------------------------------------------------------------------------------------------------------
+	// --------------------------------------------------------------------------------------------------- doTransaction
+	/**
+	 * 
+	 * @param transaction The transaction data.
+	 * @param sessionID The session ID.
+	 * @return A MovementResp object.
+	 * @throws SimpleBankServiceException An object with the error data.
+	 */
+	// -----------------------------------------------------------------------------------------------------------------
+	private MovementResp doTransaction (Movement transaction,
+													UUID sessionID )
+		throws SimpleBankServiceException
+	{
+		Optional<SessionDAO> optionalSessionDAO = sessionsRepository.findById(sessionID);
+		if (optionalSessionDAO.isPresent())
 		{
-			case OK:
-				withdraw = withdrawsRepository.add(withdraw);
-				if (withdraw.getClientID() == 0)
-					return new WithdrawResp(withdraw, WithdrawResp.Status.INVALID_CLIENT);
-				
-				return new WithdrawResp(withdraw, WithdrawResp.Status.OK);
+			SessionDAO sessionDAO = optionalSessionDAO.get();
 
-			case EXPIRED:
-				return new WithdrawResp(new Withdraw(), WithdrawResp.Status.SESSION_EXPIRED);
+			if (isExpiredSession(sessionDAO))
+				return new MovementResp(new Movement(), MovementResp.SessionStatus.EXPIRED);
 
-			case NOT_EXISTS:
-				return new WithdrawResp(new Withdraw(), WithdrawResp.Status.SESSION_DOES_NOT_EXIST);
+			MovementDAO transactionDAO = modelMapper.map(transaction, MovementDAO.class);
+			transactionDAO = movementsRepository.save(transactionDAO);
 
-			case INTERNAL_ERROR:
-				return new WithdrawResp(new Withdraw(), WithdrawResp.Status.SERVER_ERROR);
-				
-			case UNAUTHORIZED:
-				return new WithdrawResp(new Withdraw(), WithdrawResp.Status.UNAUTHORIZED);
-
-			default:
-				throw new SimpleBankServiceException();
+			transaction = modelMapper.map(transactionDAO, Movement.class);
+			return new MovementResp(transaction, MovementResp.SessionStatus.OK);
 		}
+		else
+		{
+			return new MovementResp(new Movement(), MovementResp.SessionStatus.DOES_NOT_EXIST);
+		}
+	}
+
+	// -----------------------------------------------------------------------------------------------------------------
+	// ------------------------------------------------------------------------------------------------ isExpiredSession
+	/**
+	 * Indicates if the session is expired.
+	 * @param sessionDAO The session
+	 * @return false if session is not expired else true.
+	 */
+	// -----------------------------------------------------------------------------------------------------------------
+	private boolean isExpiredSession (SessionDAO sessionDAO )
+	{
+		return sessionDAO.getTime().before(new Date());
 	}
 }

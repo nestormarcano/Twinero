@@ -40,13 +40,13 @@ public class Util
 	 * Converts a java object into JSON representation.
 	 */
 	// ----------------------------------------------------------------------------------------------------------------
-	public static String asJsonString (final Object obj, String dateFormat )
+	public static String asJsonString (final Object obj, String dateFormatPattern )
 	{
 		try
 		{
-			SimpleDateFormat _dateFormat = new SimpleDateFormat(dateFormat);
+			SimpleDateFormat simpleDateFormat = new SimpleDateFormat(dateFormatPattern);
 			ObjectMapper objMapper = new ObjectMapper();
-			objMapper.setDateFormat(_dateFormat);
+			objMapper.setDateFormat(simpleDateFormat);
 			objMapper.configure(SerializationFeature.INDENT_OUTPUT, true);
 			objMapper.configure(JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN, true);
 			return objMapper.writeValueAsString(obj);

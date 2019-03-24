@@ -2,11 +2,21 @@ package com.twinero.jtasks.nm.simplebanking.web.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.only;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -14,15 +24,20 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Example;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.twinero.jtasks.nm.simplebanking.repository.AccountStatementsRepository;
+import com.twinero.jtasks.nm.simplebanking.repository.MovementsRepository;
 import com.twinero.jtasks.nm.simplebanking.repository.SessionsRepository;
-import com.twinero.jtasks.nm.simplebanking.repository.beans.AccountStatement;
-import com.twinero.jtasks.nm.simplebanking.repository.beans.Session;
+import com.twinero.jtasks.nm.simplebanking.repository.StatementsRepository;
+import com.twinero.jtasks.nm.simplebanking.repository.beans.MovementDAO;
+import com.twinero.jtasks.nm.simplebanking.repository.beans.SessionDAO;
+import com.twinero.jtasks.nm.simplebanking.repository.beans.StatementDAO;
 import com.twinero.jtasks.nm.simplebanking.repository.exception.SimpleBankServiceException;
 import com.twinero.jtasks.nm.simplebanking.service.SimpleBankService;
-import com.twinero.jtasks.nm.simplebanking.service.beans.AccountStatementResp;
+import com.twinero.jtasks.nm.simplebanking.service.beans.Statement;
+import com.twinero.jtasks.nm.simplebanking.service.beans.StatementResp;
+import com.twinero.jtasks.nm.simplebanking.service.beans.Movement;
 
 @SpringBootTest
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -30,19 +45,24 @@ public class ServiceLayerAccountStatementTest
 {
 	@Autowired
 	private SimpleBankService service;
-	
+
 	@Autowired
 	@MockBean
 	private SessionsRepository sessionsRepository;
 
 	@Autowired
 	@MockBean
-	private AccountStatementsRepository accountStatementsRepository;
+	private StatementsRepository statementsRepository;
+
+	@Autowired
+	@MockBean
+	private MovementsRepository movementsRepository;
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// ------------------------------------------------------------------------------------ shouldReturnAccountStatement
 	/**
 	 * Gets a valid account statement.
+	 * Runs with: mvn -Dtest=ServiceLayerAccountStatementTest#shouldReturnAccountStatement test
 	 */
 	// -----------------------------------------------------------------------------------------------------------------
 	@Test
@@ -51,34 +71,135 @@ public class ServiceLayerAccountStatementTest
 		try
 		{
 			long clientID = 10;
+			long statementID = 567;
 			String sessionID = "5dd35b40-2410-11e9-b56e-0800200c9a66";
-			
-			Session session = new Session(sessionID);
-			session.setClientID(clientID);
-			session.setSessionStatus(Session.Status.OK);
+			UUID uuidSession = UUID.fromString(sessionID);
+			Date sessionExpiredDate = new Date(new Date().getTime() + 10000L);
 
-			AccountStatement expectedAccountStatement = new AccountStatement();
-			AccountStatementResp expectedAccountStatementResp = new AccountStatementResp(expectedAccountStatement,
-					AccountStatementResp.Status.OK);
+			String accountNumber = "12345678901234567890";
 
-			when(sessionsRepository.get(sessionID)).thenReturn(session);
-			when(accountStatementsRepository.get(clientID)).thenReturn(expectedAccountStatement);
+			Calendar cal = new GregorianCalendar();
+			int year = cal.get(Calendar.YEAR);
+			int month = cal.get(Calendar.MONTH) - 1;
+			if (month == -1)
+			{
+				month = 11;
+				year--;
+			}
 
-			AccountStatementResp obtainedAccountStatementResp = service.getAccountStatement(clientID, sessionID);
+			cal = new GregorianCalendar(year, month, 1, 0, 0, 0);
+			Date since = cal.getTime();
+
+			int lastDay = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
+			cal = new GregorianCalendar(year, month, lastDay, 23, 59, 59);
+			cal.set(Calendar.MILLISECOND, 999);
+			Date until = cal.getTime();
+
+			SessionDAO foundSessionDAO = new SessionDAO(uuidSession);
+			foundSessionDAO.setTime(sessionExpiredDate);
+			Optional<SessionDAO> foundOptionalSessionDAO = Optional.of(foundSessionDAO);
+
+			StatementDAO toFindStatement = new StatementDAO(clientID, 2019, 1);
+
+			StatementDAO foundStatementDAO = new StatementDAO(statementID);
+			foundStatementDAO.setAccountNumber(accountNumber);
+			foundStatementDAO.setFinalAmount(new BigDecimal(5483.83));
+			foundStatementDAO.setInitialAmount(new BigDecimal(3548.45));
+			foundStatementDAO.setYear(2019);
+			foundStatementDAO.setMonth(1);
+
+			long movementID_01 = 2277;
+			BigDecimal amount_01 = new BigDecimal(3467.25);
+			BigDecimal tax_01 = new BigDecimal(0.0);
+			String reference_01 = "88776655";
+			String description_01 = "Deposit 01";
+			Date time_01 = new Date(1547645112000L); // 2019-01-16T09:25:12.000-04:00
+
+			Movement expectedMovement_01 = new Movement(movementID_01);
+			expectedMovement_01.setAmount(amount_01);
+			expectedMovement_01.setClientID(clientID);
+			expectedMovement_01.setDescription(description_01);
+			expectedMovement_01.setReference(reference_01);
+			expectedMovement_01.setTax(tax_01);
+			expectedMovement_01.setTime(time_01);
+			expectedMovement_01.setType(Movement.Type.DEPOSIT);
+
+			long movementID_02 = 2278;
+			BigDecimal amount_02 = new BigDecimal(730.50);
+			BigDecimal tax_02 = new BigDecimal(0.10);
+			String reference_02 = "11006633";
+			String description_02 = "Withdraw 02";
+			Date time_02 = new Date(1547645130000L); // 2019-01-16T09:25:20.000-04:00
+
+			Movement expectedMovement_02 = new Movement(movementID_02);
+			expectedMovement_02.setAmount(amount_02);
+			expectedMovement_02.setClientID(clientID);
+			expectedMovement_02.setDescription(description_02);
+			expectedMovement_02.setReference(reference_02);
+			expectedMovement_02.setTax(tax_02);
+			expectedMovement_02.setTime(time_02);
+			expectedMovement_02.setType(Movement.Type.WITHDRAW);
+
+			Set<Movement> expectedMovements = new HashSet<>();
+			expectedMovements.add(expectedMovement_01);
+			expectedMovements.add(expectedMovement_02);
+
+			Statement expectedStatement = new Statement(statementID);
+			expectedStatement.setAccountNumber(accountNumber);
+			expectedStatement.setClientID(clientID);
+			expectedStatement.setSince(since);
+			expectedStatement.setUntil(until);
+			expectedStatement.setMovements(expectedMovements);
+
+			StatementResp expectedAccountStatementResp = new StatementResp(expectedStatement,
+					StatementResp.SessionStatus.OK);
+
+			MovementDAO expectedMovementDAO_01 = new MovementDAO(movementID_01);
+			expectedMovementDAO_01.setAmount(amount_01);
+			expectedMovementDAO_01.setClientID(clientID);
+			expectedMovementDAO_01.setDescription(description_01);
+			expectedMovementDAO_01.setReference(reference_01);
+			expectedMovementDAO_01.setTax(tax_01);
+			expectedMovementDAO_01.setTime(time_01);
+			expectedMovementDAO_01.setType(MovementDAO.Type.DEPOSIT);
+
+			MovementDAO expectedMovementDAO_02 = new MovementDAO(movementID_02);
+			expectedMovementDAO_02.setAmount(amount_02);
+			expectedMovementDAO_02.setClientID(clientID);
+			expectedMovementDAO_02.setDescription(description_02);
+			expectedMovementDAO_02.setReference(reference_02);
+			expectedMovementDAO_02.setTax(tax_02);
+			expectedMovementDAO_02.setTime(time_02);
+			expectedMovementDAO_02.setType(MovementDAO.Type.WITHDRAW);
+
+			List<MovementDAO> expectedMovementsDAO = new ArrayList<>();
+			expectedMovementsDAO.add(expectedMovementDAO_01);
+			expectedMovementsDAO.add(expectedMovementDAO_02);
+
+			when(sessionsRepository.findById(uuidSession)).thenReturn(foundOptionalSessionDAO);
+			when(statementsRepository.findOne(Example.of(toFindStatement)))
+					.thenReturn(Optional.of(foundStatementDAO));
+			when(movementsRepository.findByCustomerAndTimeBetween(clientID, since, until))
+					.thenReturn(expectedMovementsDAO);
+
+			StatementResp obtainedAccountStatementResp = service.getStatement(clientID, uuidSession);
 
 			assertThat(obtainedAccountStatementResp).isEqualTo(expectedAccountStatementResp);
-			verify(sessionsRepository, only()).get(sessionID);
-			verify(accountStatementsRepository, only()).get(clientID);
+			verify(sessionsRepository, only()).findById(uuidSession);
+			verify(statementsRepository, only()).findOne(Example.of(toFindStatement));
+			verify(movementsRepository, only()).findByCustomerAndTimeBetween(clientID, since, until);
 		}
 
 		// Error handling
 		// --------------
 		catch (SimpleBankServiceException ex)
 		{
+			ex.printStackTrace();
 			assertTrue(false);
 		}
 		catch (Exception ex)
 		{
+			ex.printStackTrace();
 			assertTrue(false);
 		}
 	}
@@ -96,32 +217,37 @@ public class ServiceLayerAccountStatementTest
 		{
 			long clientID = 10;
 			String sessionID = "5dd35b40-2410-11e9-b56e-0800200c9a66";
-			
-			Session session = new Session(sessionID);
-			session.setClientID(clientID);
-			session.setSessionStatus(Session.Status.EXPIRED);
+			UUID uuidSession = UUID.fromString(sessionID);
+			Date sessionExpiredDate = new Date(new Date().getTime() - 10000L);
 
-			AccountStatement expectedAccountStatement = new AccountStatement();
-			AccountStatementResp expectedAccountStatementResp = new AccountStatementResp(expectedAccountStatement,
-					AccountStatementResp.Status.SESSION_EXPIRED);
+			SessionDAO foundSessionDAO = new SessionDAO(uuidSession);
+			foundSessionDAO.setTime(sessionExpiredDate);
+			Optional<SessionDAO> foundOptionalSessionDAO = Optional.of(foundSessionDAO);
 
-			when(sessionsRepository.get(sessionID)).thenReturn(session);
+			StatementResp expectedAccountStatementResp = new StatementResp(null,
+					StatementResp.SessionStatus.EXPIRED);
 
-			AccountStatementResp obtainedAccountStatementResp = service.getAccountStatement(clientID, sessionID);
+			when(sessionsRepository.findById(uuidSession)).thenReturn(foundOptionalSessionDAO);
+
+			StatementResp obtainedAccountStatementResp = service.getStatement(clientID, uuidSession);
 
 			assertThat(obtainedAccountStatementResp).isEqualTo(expectedAccountStatementResp);
-			verify(sessionsRepository, only()).get(sessionID);
-			verifyNoMoreInteractions(accountStatementsRepository);
+
+			verify(sessionsRepository, only()).findById(uuidSession);
+			verifyZeroInteractions(statementsRepository);
+			verifyZeroInteractions(movementsRepository);
 		}
 
 		// Error handling
 		// --------------
 		catch (SimpleBankServiceException ex)
 		{
+			ex.printStackTrace();
 			assertTrue(false);
 		}
 		catch (Exception ex)
 		{
+			ex.printStackTrace();
 			assertTrue(false);
 		}
 	}
@@ -139,82 +265,32 @@ public class ServiceLayerAccountStatementTest
 		{
 			long clientID = 10;
 			String sessionID = "5dd35b40-2410-11e9-b56e-0800200c9a66";
-			
-			Session session = new Session(sessionID);
-			session.setClientID(clientID);
-			session.setSessionStatus(Session.Status.NOT_EXISTS);
+			UUID uuidSession = UUID.fromString(sessionID);
 
-			AccountStatement expectedAccountStatement = new AccountStatement();
-			AccountStatementResp expectedAccountStatementResp = new AccountStatementResp(expectedAccountStatement,
-					AccountStatementResp.Status.SESSION_DOES_NOT_EXIST);
+			StatementResp expectedAccountStatementResp = new StatementResp(null,
+					StatementResp.SessionStatus.DOES_NOT_EXIST);
 
-			when(sessionsRepository.get(sessionID)).thenReturn(session);
+			when(sessionsRepository.findById(uuidSession)).thenReturn(Optional.empty());
 
-			AccountStatementResp obtainedAccountStatementResp = service.getAccountStatement(clientID, sessionID);
+			StatementResp obtainedAccountStatementResp = service.getStatement(clientID, uuidSession);
 
 			assertThat(obtainedAccountStatementResp).isEqualTo(expectedAccountStatementResp);
-			verify(sessionsRepository, only()).get(sessionID);
-			verifyNoMoreInteractions(accountStatementsRepository);
+
+			verify(sessionsRepository, only()).findById(uuidSession);
+			verifyZeroInteractions(statementsRepository);
+			verifyZeroInteractions(movementsRepository);
 		}
 
 		// Error handling
 		// --------------
 		catch (SimpleBankServiceException ex)
 		{
+			ex.printStackTrace();
 			assertTrue(false);
 		}
 		catch (Exception ex)
 		{
-			assertTrue(false);
-		}
-	}
-
-	// -----------------------------------------------------------------------------------------------------------------
-	// ------------------------------------------------------------ shouldNotReturnTheAccountStatementBecauseServerError
-	/**
-	 * Doesn't get valid account statement (server error).
-	 */
-	// -----------------------------------------------------------------------------------------------------------------
-	@Test
-	public void shouldNotReturnTheAccountStatementBecauseServerError ()
-	{
-		try
-		{
-			long clientID = 10;
-			String sessionID = "5dd35b40-2410-11e9-b56e-0800200c9a66";
-			
-			Session session = new Session(sessionID);
-			session.setClientID(clientID);
-			session.setSessionStatus(Session.Status.OK);
-
-			when(sessionsRepository.get(sessionID)).thenReturn(session);
-			when(accountStatementsRepository.get(clientID)).thenThrow(SimpleBankServiceException.class);
-
-			try
-			{
-				service.getAccountStatement(clientID, sessionID);
-			}
-			catch (SimpleBankServiceException ex)
-			{
-				verify(sessionsRepository, only()).get(sessionID);
-				clearInvocations(sessionsRepository);
-				
-				verify(accountStatementsRepository, only()).get(clientID);
-				clearInvocations(accountStatementsRepository);
-			}
-
-			verifyNoMoreInteractions(sessionsRepository);
-			verifyNoMoreInteractions(accountStatementsRepository);
-		}
-
-		// Error handling
-		// --------------
-		catch (SimpleBankServiceException ex)
-		{
-			assertTrue(false);
-		}
-		catch (Exception ex)
-		{
+			ex.printStackTrace();
 			assertTrue(false);
 		}
 	}

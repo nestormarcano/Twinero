@@ -8,18 +8,25 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Optional;
+import java.util.UUID;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Example;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.twinero.jtasks.nm.simplebanking.repository.SessionsRepository;
-import com.twinero.jtasks.nm.simplebanking.repository.beans.Session;
+import com.twinero.jtasks.nm.simplebanking.repository.SignupsRepository;
+import com.twinero.jtasks.nm.simplebanking.repository.beans.SessionDAO;
+import com.twinero.jtasks.nm.simplebanking.repository.beans.SignDAO;
 import com.twinero.jtasks.nm.simplebanking.repository.exception.SimpleBankServiceException;
 import com.twinero.jtasks.nm.simplebanking.service.SimpleBankService;
+import com.twinero.jtasks.nm.simplebanking.service.beans.Session;
 
 @SpringBootTest
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -31,7 +38,11 @@ public class ServiceLayerSessionsTest
 	@Autowired
 	@MockBean
 	private SessionsRepository sessionsRepository;
-	
+
+	@Autowired
+	@MockBean
+	private SignupsRepository signupsRepository;
+
 	// -----------------------------------------------------------------------------------------------------------------
 	// ------------------------------------------------------------------------------------------ shouldLoginAndReturnOK
 	/**
@@ -43,66 +54,129 @@ public class ServiceLayerSessionsTest
 	{
 		try
 		{
+			long signID = 123L;
 			String email = "nestor.marcano@gmail.com";
 			String password = "123456";
+			String uuidString = "5dd35b40-2410-11e9-b56e-0800200c9a66";
+			UUID uuid = UUID.fromString(uuidString);
+
 			Session session = new Session(email, password);
-			
-			long clientID = 10;
-			Session expectedSession = new Session("5dd35b40-2410-11e9-b56e-0800200c9a66");
-			expectedSession.setClientID(clientID);
 
-			when(sessionsRepository.add(session)).thenReturn(expectedSession);
+			SignDAO customerFoundSignDAO = new SignDAO(signID);
+			customerFoundSignDAO.setEmail(email);
+			customerFoundSignDAO.setPassword(password);
 
-			Session obtainedSession = service.login(session);
+			SessionDAO toRepositorySaveSessionDAO = new SessionDAO(customerFoundSignDAO);
 
-			assertThat(obtainedSession).isEqualTo(expectedSession);
-			verify(sessionsRepository, only()).add(session);
+			SessionDAO fromRepositorySaveSessionDAO = new SessionDAO(customerFoundSignDAO);
+			fromRepositorySaveSessionDAO.setSessionID(uuid);
+
+			Session serviceExpectedSession = new Session(uuidString);
+			serviceExpectedSession.setClientID(signID);
+			serviceExpectedSession.setEmail(email);
+			serviceExpectedSession.setSessionStatus(Session.Status.OK);
+
+			SignDAO signWithoutPass = new SignDAO(email, null);
+
+			when(signupsRepository.findOne(Example.of(signWithoutPass))).thenReturn(Optional.of(customerFoundSignDAO));
+			when(sessionsRepository.save(toRepositorySaveSessionDAO)).thenReturn(fromRepositorySaveSessionDAO);
+
+			Session serviceObtainedSession = service.login(session);
+
+			assertThat(serviceObtainedSession).isEqualTo(serviceExpectedSession);
+			verify(signupsRepository, only()).findOne(Example.of(signWithoutPass));
+			verify(sessionsRepository, only()).save(toRepositorySaveSessionDAO);
 		}
 
 		// Error handling
 		// --------------
 		catch (SimpleBankServiceException ex)
 		{
+			ex.printStackTrace();
 			assertTrue(false);
 		}
 		catch (Exception ex)
 		{
+			ex.printStackTrace();
 			assertTrue(false);
 		}
 	}
-	
+
 	// -----------------------------------------------------------------------------------------------------------------
-	// -------------------------------------------------------------------------------------------------- shouldNotLogin
+	// -------------------------------------------------------------------------- shouldNotLoginBecauseEmailDoesNotExist
 	/**
-	 * Performs a valid login.
+	 * Performs an invalid valid login because the email does not exist.
 	 */
 	// -----------------------------------------------------------------------------------------------------------------
 	@Test
-	public void shouldNotLogin ()
+	public void shouldNotLoginBecauseEmailDoesNotExist ()
 	{
 		try
 		{
 			String email = "nestor.marcano@gmail.com";
 			String password = "123456";
+
 			Session session = new Session(email, password);
-			
-			Session expectedSession = new Session();
-			expectedSession.setSessionStatus(Session.Status.UNAUTHORIZED);
 
-			when(sessionsRepository.add(session)).thenReturn(expectedSession);
+			Session serviceExpectedSession = new Session();
+			serviceExpectedSession.setEmail(email);
+			serviceExpectedSession.setSessionStatus(Session.Status.UNAUTHORIZED);
 
-			Session obtainedSession = service.login(session);
+			SignDAO signWithoutPass = new SignDAO(email, null);
 
-			assertThat(obtainedSession).isEqualTo(expectedSession);
-			verify(sessionsRepository, only()).add(session);
+			when(signupsRepository.findOne(Example.of(signWithoutPass))).thenReturn(Optional.empty());
+
+			Session serviceObtainedSession = service.login(session);
+
+			assertThat(serviceObtainedSession).isEqualTo(serviceExpectedSession);
+			verify(signupsRepository, only()).findOne(Example.of(signWithoutPass));
 		}
 
 		// Error handling
 		// --------------
-		catch (SimpleBankServiceException ex)
+		catch (Exception ex)
 		{
 			assertTrue(false);
 		}
+	}
+
+	// -----------------------------------------------------------------------------------------------------------------
+	// -------------------------------------------------------------------------- shouldNotLoginBecauseEmailDoesNotMatch
+	/**
+	 * Performs an invalid valid login because the email does not match.
+	 */
+	// -----------------------------------------------------------------------------------------------------------------
+	@Test
+	public void shouldNotLoginBecauseEmailDoesNotMatch ()
+	{
+		try
+		{
+			long signID = 123L;
+			String email = "nestor.marcano@gmail.com";
+			String password = "123456";
+
+			Session session = new Session(email, password);
+
+			Session serviceExpectedSession = new Session();
+			serviceExpectedSession.setEmail(email);
+			serviceExpectedSession.setSessionStatus(Session.Status.UNAUTHORIZED);
+
+			SignDAO signWithoutPass = new SignDAO(email, null);
+
+			SignDAO foundSignDAO = new SignDAO(signID);
+			foundSignDAO.setEmail(email);
+			foundSignDAO.setPassword(password + "abcd");
+
+			when(signupsRepository.findOne(Example.of(signWithoutPass))).thenReturn(Optional.of(foundSignDAO));
+
+			Session serviceObtainedSession = service.login(session);
+
+			assertThat(serviceObtainedSession).isEqualTo(serviceExpectedSession);
+			verify(signupsRepository, only()).findOne(Example.of(signWithoutPass));
+		}
+
+		// Error handling
+		// --------------
 		catch (Exception ex)
 		{
 			assertTrue(false);
@@ -120,25 +194,38 @@ public class ServiceLayerSessionsTest
 	{
 		try
 		{
-			Session session = new Session();
+			long signID = 123L;
+			String email = null;
+			String password = "123456";
+
+			Session session = new Session(email, password);
+
+			SignDAO customerFoundSignDAO = new SignDAO(signID);
+			customerFoundSignDAO.setEmail(email);
+			customerFoundSignDAO.setPassword(password);
+
+			SessionDAO toRepositorySaveSessionDAO = new SessionDAO(customerFoundSignDAO);
+			SignDAO signWithoutPass = new SignDAO(email, null);
+
 			try
 			{
 				service.login(session);
 			}
-			catch (SimpleBankServiceException ex)
+			catch (Exception ex)
 			{
-				verify(sessionsRepository, times(0)).add(session);
+				verify(signupsRepository, times(0)).findOne(Example.of(signWithoutPass));
+				verify(sessionsRepository, times(0)).save(toRepositorySaveSessionDAO);
+
+				clearInvocations(signupsRepository);
+				clearInvocations(sessionsRepository);
 			}
 
-			verify(sessionsRepository, times(0)).add(session);
+			verify(signupsRepository, times(0)).findOne(Example.of(signWithoutPass));
+			verify(sessionsRepository, times(0)).save(toRepositorySaveSessionDAO);
 		}
 
 		// Error handling
 		// --------------
-		catch (SimpleBankServiceException ex)
-		{
-			assertTrue(false);
-		}
 		catch (Exception ex)
 		{
 			assertTrue(false);
@@ -156,70 +243,41 @@ public class ServiceLayerSessionsTest
 	{
 		try
 		{
-			Session session = new Session("nestor marcano gmail.com", "123456");
+			long signID = 123L;
+			String email = "nestor marcano gmail.com";
+			String password = "123456";
+
+			Session session = new Session(email, password);
+
+			SignDAO customerFoundSignDAO = new SignDAO(signID);
+			customerFoundSignDAO.setEmail(email);
+			customerFoundSignDAO.setPassword(password);
+
+			SessionDAO toRepositorySaveSessionDAO = new SessionDAO(customerFoundSignDAO);
+			SignDAO signWithoutPass = new SignDAO(email, null);
 
 			try
 			{
 				service.login(session);
 			}
-			catch (SimpleBankServiceException ex)
+			catch (Exception ex)
 			{
-				verify(sessionsRepository, times(0)).add(session);
-			}
+				verify(signupsRepository, times(0)).findOne(Example.of(signWithoutPass));
+				verify(sessionsRepository, times(0)).save(toRepositorySaveSessionDAO);
 
-			verify(sessionsRepository, times(0)).add(session);
-		}
-
-		// Error handling
-		// --------------
-		catch (SimpleBankServiceException ex)
-		{
-			assertTrue(false);
-		}
-		catch (Exception ex)
-		{
-			assertTrue(false);
-		}
-	}
-
-	// -----------------------------------------------------------------------------------------------------------------
-	// --------------------------------------------------------------------------------------- shouldNotLoginServerError
-	/**
-	 * Performs not valid login (server error).
-	 */
-	// -----------------------------------------------------------------------------------------------------------------
-	@Test
-	public void shouldNotLoginServerError ()
-	{
-		try
-		{
-			Session session = new Session("nestor.marcano@gmail.com", "123456");
-
-			when(sessionsRepository.add(session)).thenThrow(SimpleBankServiceException.class);
-			
-			try
-			{
-				service.login(session);
-			}
-			catch (SimpleBankServiceException ex)
-			{
-				verify(sessionsRepository, only()).add(session);
+				clearInvocations(signupsRepository);
 				clearInvocations(sessionsRepository);
 			}
 
-			verify(sessionsRepository, times(0)).add(session);
+			verify(signupsRepository, times(0)).findOne(Example.of(signWithoutPass));
+			verify(sessionsRepository, times(0)).save(toRepositorySaveSessionDAO);
 		}
 
 		// Error handling
 		// --------------
-		catch (SimpleBankServiceException ex)
-		{
-			assertTrue(false);
-		}
 		catch (Exception ex)
 		{
 			assertTrue(false);
 		}
 	}
 }
-

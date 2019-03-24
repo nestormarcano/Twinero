@@ -2,12 +2,12 @@ package com.twinero.jtasks.nm.simplebanking.web.service;
 
 import static org.junit.Assert.assertTrue;
 import static org.assertj.core.api.Assertions.assertThat;
-
-import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.only;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.util.Optional;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -15,14 +15,13 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Example;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.twinero.jtasks.nm.simplebanking.repository.SignupsRepository;
-import com.twinero.jtasks.nm.simplebanking.repository.beans.Sign;
+import com.twinero.jtasks.nm.simplebanking.repository.beans.SignDAO;
 import com.twinero.jtasks.nm.simplebanking.repository.exception.SimpleBankServiceException;
 import com.twinero.jtasks.nm.simplebanking.service.SimpleBankService;
-import com.twinero.jtasks.nm.simplebanking.service.beans.SignReq;
-import com.twinero.jtasks.nm.simplebanking.service.beans.SignupResp;
 
 @SpringBootTest
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -38,7 +37,7 @@ public class ServiceLayerSignupTest
 	// -----------------------------------------------------------------------------------------------------------------
 	// ----------------------------------------------------------------------------------------- shouldSignupAndReturnOK
 	/**
-	 * Performs a valid Sign-up.
+	 * Performs a valid SignDAO-up.
 	 */
 	// -----------------------------------------------------------------------------------------------------------------
 	@Test
@@ -49,20 +48,17 @@ public class ServiceLayerSignupTest
 			String email = "nestor.marcano@gmail.com";
 			String password = "123456";
 			
-			Sign sign = new Sign(email, password);
+			SignDAO sign = new SignDAO(email, password);
 			
-			Sign expectedSign = new Sign(email, password);
-			expectedSign.setSignID(123);
-			
-			SignReq signReq = new SignReq(email, password);
-			
-			SignupResp expectedSignupResp = new SignupResp(SignupResp.Status.OK);
-			when(signupsRepository.add(sign)).thenReturn(expectedSign);
+			SignDAO expectedSign = new SignDAO(email, password);
+			expectedSign.setSignID(123L);
 
-			SignupResp obtainedSignupResp = service.signup(signReq);
+			when(signupsRepository.save(sign)).thenReturn(expectedSign);
+			
+			SignDAO obtainedSign = service.signup(sign);
 
-			assertThat(obtainedSignupResp).isEqualTo(expectedSignupResp);
-			verify(signupsRepository, only()).add(sign);
+			assertThat(obtainedSign).isEqualTo(expectedSign);
+			verify(signupsRepository, times(1)).save(sign);
 		}
 
 		// Error handling
@@ -88,68 +84,94 @@ public class ServiceLayerSignupTest
 	{
 		try
 		{
-			Sign sign = new Sign();
-			SignReq signReq = new SignReq();
+			SignDAO sign = new SignDAO();
 			
 			try
 			{
-				service.signup(signReq);
+				service.signup(sign);
 			}
 			catch (SimpleBankServiceException ex)
 			{
-				verify(signupsRepository, times(0)).add(sign);
+				verify(signupsRepository, times(0)).save(sign);
 			}
 
-			verify(signupsRepository, times(0)).add(sign);
+			verify(signupsRepository, times(0)).save(sign);
 		}
 
 		// Error handling
 		// --------------
-		catch (SimpleBankServiceException ex)
-		{
-			assertTrue(false);
-		}
 		catch (Exception ex)
 		{
 			assertTrue(false);
 		}
 	}
-
+	
 	// -----------------------------------------------------------------------------------------------------------------
-	// -------------------------------------------------------------------------------------- shouldSignupMalformedEmail
+	// ----------------------------------------------------------------------------------- shouldNotSignupEmailMalformed
 	/**
-	 * Performs not valid Sign-up (malformed email).
+	 * Performs a not valid sign up because the sign email is malformed.
 	 */
 	// -----------------------------------------------------------------------------------------------------------------
 	@Test
-	public void shouldSignupMalformedEmail ()
+	public void shouldNotSignupEmailMalformed ()
 	{
 		try
 		{
-			String email = "nestor marcano gmail.com";
+			// -------------------------------------------------------------------
+			String email = "nestor marcano@gmail.com";
 			String password = "123456";
 			
-			Sign sign = new Sign(email, password);
-			SignReq signReq = new SignReq(email, password);
-			
+			SignDAO sign = new SignDAO(email, password);
 			try
 			{
-				service.signup(signReq);
+				service.signup(sign);
 			}
 			catch (SimpleBankServiceException ex)
 			{
-				verify(signupsRepository, times(0)).add(sign);
+				verify(signupsRepository, times(0)).save(sign);
 			}
 
-			verify(signupsRepository, times(0)).add(sign);
+			verify(signupsRepository, times(0)).save(sign);
 		}
 
 		// Error handling
 		// --------------
-		catch (SimpleBankServiceException ex)
+		catch (Exception ex)
 		{
 			assertTrue(false);
 		}
+	}
+	
+	// -----------------------------------------------------------------------------------------------------------------
+	// -------------------------------------------------------------------------------- shouldNotSignupPasswordMalformed
+	/**
+	 * Performs a not valid sign up because the sign password is malformed.
+	 */
+	// -----------------------------------------------------------------------------------------------------------------
+	@Test
+	public void shouldNotSignupPasswordMalformed ()
+	{
+		try
+		{
+			String email = "nestor.marcano@gmail.com";
+			String password = "123 456";
+			
+			SignDAO sign = new SignDAO(email, password);
+			
+			try
+			{
+				service.signup(sign);
+			}
+			catch (SimpleBankServiceException ex)
+			{
+				verify(signupsRepository, times(0)).save(sign);
+			}
+
+			verify(signupsRepository, times(0)).save(sign);
+		}
+
+		// Error handling
+		// --------------
 		catch (Exception ex)
 		{
 			assertTrue(false);
@@ -167,75 +189,36 @@ public class ServiceLayerSignupTest
 	{
 		try
 		{
+			long signID = 123L;
 			String email = "nestor.marcano@gmail.com";
 			String password = "123456";
 			
-			Sign sign = new Sign(email, password);
-			Sign expectedSign = new Sign();
-			SignReq signReq = new SignReq(email, password);
+			SignDAO sign = new SignDAO(email, password);
+			SignDAO signWithoutPass = new SignDAO(email, null);
+			SignDAO expectedSignDAO = new SignDAO(email, password);
+
+			SignDAO foundSignDAO = new SignDAO(signID);
+			foundSignDAO.setEmail(email);
+			Optional<SignDAO> foundOptionalSignDAO = Optional.of(foundSignDAO);
 			
-			SignupResp expectedSignupResp = new SignupResp(SignupResp.Status.ALREADY_EXISTS);
+			when(signupsRepository.findOne(Example.of(signWithoutPass))).thenReturn(foundOptionalSignDAO);
 
-			when(signupsRepository.add(sign)).thenReturn(expectedSign);
+			SignDAO obtinedSignDAO = service.signup(sign);
 
-			SignupResp obtinedSignupResp = service.signup(signReq);
-
-			assertThat(obtinedSignupResp).isEqualTo(expectedSignupResp);
-			verify(signupsRepository, only()).add(sign);
+			assertThat(obtinedSignDAO).isEqualTo(expectedSignDAO);
+			verify(signupsRepository, only()).findOne(Example.of(signWithoutPass));
 		}
 
 		// Error handling
 		// --------------
 		catch (SimpleBankServiceException ex)
 		{
+			ex.printStackTrace();
 			assertTrue(false);
 		}
 		catch (Exception ex)
 		{
-			assertTrue(false);
-		}
-	}
-
-	// -----------------------------------------------------------------------------------------------------------------
-	// -------------------------------------------------------------------------------------- shouldNotSignupServerError
-	/**
-	 * Performs not valid Sign-up (server error).
-	 */
-	// -----------------------------------------------------------------------------------------------------------------
-	@Test
-	public void shouldNotSignupServerError ()
-	{
-		try
-		{
-			String email = "nestor.marcano@gmail.com";
-			String password = "123456";
-			
-			Sign sign = new Sign(email, password);
-			SignReq signReq = new SignReq(email, password);
-
-			when(signupsRepository.add(sign)).thenThrow(SimpleBankServiceException.class);
-			
-			try
-			{
-				service.signup(signReq);
-			}
-			catch (SimpleBankServiceException ex)
-			{
-				verify(signupsRepository, only()).add(sign);
-				clearInvocations(signupsRepository);
-			}
-
-			verify(signupsRepository, times(0)).add(sign);
-		}
-
-		// Error handling
-		// --------------
-		catch (SimpleBankServiceException ex)
-		{
-			assertTrue(false);
-		}
-		catch (Exception ex)
-		{
+			ex.printStackTrace();
 			assertTrue(false);
 		}
 	}
