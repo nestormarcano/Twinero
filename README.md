@@ -1,6 +1,10 @@
 # Java Developer coding task by Twinero
 
-1) To compile:<br>
+1) Configuring the DB connection:<br>
+	- You must create a PostgreSQL DB called: simple_banking.<br>
+	- Edit the application.properties file and change the username and password accordingly.
+	
+2) To compile:<br>
     $ mvn clean package
 
 This will compile, run every single test and generate the Jacoco report.
@@ -9,10 +13,13 @@ Jacoco  report is in: <b>target/site/jacoco/index.html</b>
 
 Adicionally it will generate the API REST documentacion in <b>target/generated-docs/api-guide.html</b>
 
-2) For generates the javadoc documentation:<br>
+3) For generates the javadoc documentation:<br>
 $ mvn javadoc:javadoc
 
 The javadoc documentation will be generate in: <b>target/site/apidocs/index.html</b>
+
+4) To run:
+	$ mvn spring-boot:run
 
 ## The project meets the following requirements:
 

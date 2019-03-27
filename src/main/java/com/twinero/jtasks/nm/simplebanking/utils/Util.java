@@ -1,11 +1,6 @@
 package com.twinero.jtasks.nm.simplebanking.utils;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.text.SimpleDateFormat;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -55,36 +50,5 @@ public class Util
 		{
 			throw new RuntimeException(e);
 		}
-	}
-
-	
-	// ----------------------------------------------------------------------------------------------------------------
-	// ----------------------------------------------------------------------------------------------------------------
-	/*
-	 * Serializes a java object into byte[].
-	 */
-	// ----------------------------------------------------------------------------------------------------------------
-	public static byte[] serialize (Object obj )
-		throws IOException
-	{
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		ObjectOutputStream os = new ObjectOutputStream(out);
-		os.writeObject(obj);
-		return out.toByteArray();
-	}
-
-	// ---------------------------------------------------------------------------------------------- checksEmailFormat
-	// ----------------------------------------------------------------------------------------------------------------
-	/*
-	 * Checks the email format.
-	 */
-	// ----------------------------------------------------------------------------------------------------------------
-	public static boolean checksEmailFormat (String email )
-	{
-		Pattern pattern = Pattern.compile(
-				"^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@" + "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$");
-
-		Matcher matcher = pattern.matcher(email);
-		return matcher.find();
-	}
+	}	
 }

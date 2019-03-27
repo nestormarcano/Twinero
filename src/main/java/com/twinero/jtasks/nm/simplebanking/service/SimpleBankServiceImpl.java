@@ -6,7 +6,6 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -128,7 +127,7 @@ public class SimpleBankServiceImpl implements SimpleBankService
 	public Session login (@Valid Session session )
 		throws SimpleBankServiceException
 	{
-		try
+		//try
 		{
 			SignDAO toFindSignDAO = new SignDAO(session.getEmail(), null);
 			Optional<SignDAO> foundOptionalSignDAO = signupsRepository.findOne(Example.of(toFindSignDAO));
@@ -154,6 +153,7 @@ public class SimpleBankServiceImpl implements SimpleBankService
 			return session;
 		}
 
+		/*
 		// Error handling
 		// --------------
 		catch (NoSuchElementException ex)
@@ -166,6 +166,7 @@ public class SimpleBankServiceImpl implements SimpleBankService
 		{
 			throw new SimpleBankServiceException();
 		}
+		*/
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -244,8 +245,6 @@ public class SimpleBankServiceImpl implements SimpleBankService
 			balance.setDate(new Date());
 
 			return new BalanceResp(balance, BalanceResp.SessionStatus.OK);
-
-			// else return new BalanceResp(new Balance(), BalanceResp.SessionStatus.OK);
 		}
 		else return new BalanceResp(new Balance(), BalanceResp.SessionStatus.DOES_NOT_EXIST);
 	}
@@ -281,50 +280,58 @@ public class SimpleBankServiceImpl implements SimpleBankService
 				}
 				cal = new GregorianCalendar(year, month, 1, 0, 0, 0);
 
+				Date since = cal.getTime();
+
+				int lastDay = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
+				cal = new GregorianCalendar(year, month, lastDay, 23, 59, 59);
+				cal.set(Calendar.MILLISECOND, 999);
+
+				Date until = cal.getTime();
+
 				StatementDAO example = new StatementDAO(clientID, year, month);
 				Optional<StatementDAO> optionalStatementDAO = statementsRepository.findOne(Example.of(example));
+
+				Statement statement;
 				if (optionalStatementDAO.isPresent())
 				{
 					StatementDAO statementDAO = optionalStatementDAO.get();
-					Statement statement = modelMapper.map(statementDAO, Statement.class);
+					statement = modelMapper.map(statementDAO, Statement.class);
 
-					Date since = cal.getTime();
 					statement.setSince(since);
-
-					int lastDay = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
-					cal = new GregorianCalendar(year, month, lastDay, 23, 59, 59);
-					cal.set(Calendar.MILLISECOND, 999);
-
-					Date until = cal.getTime();
 					statement.setUntil(until);
 					statement.setClientID(clientID);
-
-					List<MovementDAO> movementsDAO = movementsRepository
-							.findByCustomerAndTimeBetween(clientID, since, until);
-
-					Set<Movement> movements = new HashSet<>();
-					for (MovementDAO movementDAO : movementsDAO)
-					{
-						Movement movement = new Movement();
-						movement.setAmount(movementDAO.getAmount());
-						movement.setClientID(movementDAO.getClientID());
-						movement.setDescription(movementDAO.getDescription());
-						movement.setMovementID(movementDAO.getMovementID());
-						movement.setReference(movementDAO.getReference());
-						movement.setTax(movementDAO.getTax());
-						movement.setTime(movementDAO.getTime());
-						movement
-								.setType(movementDAO.getType() == MovementDAO.Type.DEPOSIT
-										? Movement.Type.DEPOSIT
-										: Movement.Type.WITHDRAW);
-
-						movements.add(movement);
-					}
-
-					statement.setMovements(movements);
-					return new StatementResp(statement, StatementResp.SessionStatus.OK);
 				}
-				else return new StatementResp(new Statement(), StatementResp.SessionStatus.OK);
+				else
+				{
+					statement = new Statement();
+				}
+
+				List<MovementDAO> movementsDAO = movementsRepository
+						.findByCustomerAndTimeBetween(clientID, since, until);
+
+				Set<Movement> movements = new HashSet<>();
+				for (MovementDAO movementDAO : movementsDAO)
+				{
+					Movement movement = new Movement();
+					movement.setAmount(movementDAO.getAmount());
+					movement.setClientID(movementDAO.getClientID());
+					movement.setDescription(movementDAO.getDescription());
+					movement.setMovementID(movementDAO.getMovementID());
+					movement.setReference(movementDAO.getReference());
+					movement.setTax(movementDAO.getTax());
+					movement.setTime(movementDAO.getTime());
+					movement
+							.setType(movementDAO.getType() == MovementDAO.Type.DEPOSIT
+									? Movement.Type.DEPOSIT
+									: Movement.Type.WITHDRAW);
+
+					movements.add(movement);
+				}
+
+				statement.setMovements(movements);
+				return new StatementResp(statement, StatementResp.SessionStatus.OK);
+				// }
+				// else return new StatementResp(new Statement(), StatementResp.SessionStatus.OK);
 			}
 			else return new StatementResp(null, StatementResp.SessionStatus.DOES_NOT_EXIST);
 		}

@@ -41,12 +41,12 @@ public class SignDAO
 	@Id
 	@Column(name = "customer_id")
 	@GeneratedValue(strategy = GenerationType.AUTO)
-	private long signID;
+	private Long signID;
 
 	@NotBlank
 	@UniqueEmail
 	@Pattern(regexp = emailRegExp)
-	@Column(columnDefinition = "VARCHAR(255) NOT NULL", nullable = false, updatable = true)
+	@Column(columnDefinition = "VARCHAR(255) NOT NULL", nullable = false, updatable = true, unique = true)
 	private String email;
 
 	@NonNull
@@ -60,7 +60,7 @@ public class SignDAO
 	@CreatedDate
 	private Date createdAt;
 
-	@Column(nullable = false)
+	@Column(nullable = false, updatable = true)
 	@Temporal(TemporalType.TIMESTAMP)
 	@LastModifiedDate
 	private Date updatedAt;
@@ -86,7 +86,7 @@ public class SignDAO
 	 * 
 	 * @param theSignID    The sign id.
 	 */
-	public SignDAO ( long theSignID )
+	public SignDAO ( Long theSignID )
 	{
 		this.signID = theSignID;
 	}
@@ -133,7 +133,7 @@ public class SignDAO
 	/**
 	 * @return the signID
 	 */
-	public long getSignID ()
+	public Long getSignID ()
 	{
 		return this.signID;
 	}
@@ -141,7 +141,7 @@ public class SignDAO
 	/**
 	 * @param newSignID the signID to set
 	 */
-	public void setSignID (long newSignID )
+	public void setSignID (Long newSignID )
 	{
 		this.signID = newSignID;
 	}

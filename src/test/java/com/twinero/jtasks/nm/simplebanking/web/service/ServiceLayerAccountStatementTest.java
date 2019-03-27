@@ -205,6 +205,138 @@ public class ServiceLayerAccountStatementTest
 	}
 	
 	// -----------------------------------------------------------------------------------------------------------------
+	// ------------------------------------------------------------------- shouldReturnAccountStatementButItIsNotPresent
+	/**
+	 * Gets a valid account statement.
+	 * Runs with: mvn -Dtest=ServiceLayerAccountStatementTest#shouldReturnAccountStatementButItIsNotPresent test
+	 */
+	// -----------------------------------------------------------------------------------------------------------------
+	@Test
+	public void shouldReturnAccountStatementButItIsNotPresent ()
+	{
+		try
+		{
+			long clientID = 10;
+			String sessionID = "5dd35b40-2410-11e9-b56e-0800200c9a66";
+			UUID uuidSession = UUID.fromString(sessionID);
+			Date sessionExpiredDate = new Date(new Date().getTime() + 10000L);
+
+			Calendar cal = new GregorianCalendar();
+			int year = cal.get(Calendar.YEAR);
+			int month = cal.get(Calendar.MONTH) - 1;
+			if (month == -1)
+			{
+				month = 11;
+				year--;
+			}
+
+			cal = new GregorianCalendar(year, month, 1, 0, 0, 0);
+			Date since = cal.getTime();
+
+			int lastDay = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
+			cal = new GregorianCalendar(year, month, lastDay, 23, 59, 59);
+			cal.set(Calendar.MILLISECOND, 999);
+			Date until = cal.getTime();
+
+			SessionDAO foundSessionDAO = new SessionDAO(uuidSession);
+			foundSessionDAO.setTime(sessionExpiredDate);
+			Optional<SessionDAO> foundOptionalSessionDAO = Optional.of(foundSessionDAO);
+
+			StatementDAO toFindStatement = new StatementDAO(clientID, 2019, 1);
+
+			long movementID_01 = 2277;
+			BigDecimal amount_01 = new BigDecimal(3467.25);
+			BigDecimal tax_01 = new BigDecimal(0.0);
+			String reference_01 = "88776655";
+			String description_01 = "Deposit 01";
+			Date time_01 = new Date(1547645112000L); // 2019-01-16T09:25:12.000-04:00
+
+			Movement expectedMovement_01 = new Movement(movementID_01);
+			expectedMovement_01.setAmount(amount_01);
+			expectedMovement_01.setClientID(clientID);
+			expectedMovement_01.setDescription(description_01);
+			expectedMovement_01.setReference(reference_01);
+			expectedMovement_01.setTax(tax_01);
+			expectedMovement_01.setTime(time_01);
+			expectedMovement_01.setType(Movement.Type.DEPOSIT);
+
+			long movementID_02 = 2278;
+			BigDecimal amount_02 = new BigDecimal(730.50);
+			BigDecimal tax_02 = new BigDecimal(0.10);
+			String reference_02 = "11006633";
+			String description_02 = "Withdraw 02";
+			Date time_02 = new Date(1547645130000L); // 2019-01-16T09:25:20.000-04:00
+
+			Movement expectedMovement_02 = new Movement(movementID_02);
+			expectedMovement_02.setAmount(amount_02);
+			expectedMovement_02.setClientID(clientID);
+			expectedMovement_02.setDescription(description_02);
+			expectedMovement_02.setReference(reference_02);
+			expectedMovement_02.setTax(tax_02);
+			expectedMovement_02.setTime(time_02);
+			expectedMovement_02.setType(Movement.Type.WITHDRAW);
+
+			Set<Movement> expectedMovements = new HashSet<>();
+			expectedMovements.add(expectedMovement_01);
+			expectedMovements.add(expectedMovement_02);
+
+			Statement expectedStatement = new Statement();
+			expectedStatement.setMovements(expectedMovements);
+			
+			StatementResp expectedAccountStatementResp = new StatementResp(expectedStatement,
+					StatementResp.SessionStatus.OK);
+
+			MovementDAO expectedMovementDAO_01 = new MovementDAO(movementID_01);
+			expectedMovementDAO_01.setAmount(amount_01);
+			expectedMovementDAO_01.setClientID(clientID);
+			expectedMovementDAO_01.setDescription(description_01);
+			expectedMovementDAO_01.setReference(reference_01);
+			expectedMovementDAO_01.setTax(tax_01);
+			expectedMovementDAO_01.setTime(time_01);
+			expectedMovementDAO_01.setType(MovementDAO.Type.DEPOSIT);
+
+			MovementDAO expectedMovementDAO_02 = new MovementDAO(movementID_02);
+			expectedMovementDAO_02.setAmount(amount_02);
+			expectedMovementDAO_02.setClientID(clientID);
+			expectedMovementDAO_02.setDescription(description_02);
+			expectedMovementDAO_02.setReference(reference_02);
+			expectedMovementDAO_02.setTax(tax_02);
+			expectedMovementDAO_02.setTime(time_02);
+			expectedMovementDAO_02.setType(MovementDAO.Type.WITHDRAW);
+
+			List<MovementDAO> expectedMovementsDAO = new ArrayList<>();
+			expectedMovementsDAO.add(expectedMovementDAO_01);
+			expectedMovementsDAO.add(expectedMovementDAO_02);
+
+			when(sessionsRepository.findById(uuidSession)).thenReturn(foundOptionalSessionDAO);
+			when(statementsRepository.findOne(Example.of(toFindStatement)))
+					.thenReturn(Optional.empty());
+			when(movementsRepository.findByCustomerAndTimeBetween(clientID, since, until))
+					.thenReturn(expectedMovementsDAO);
+
+			StatementResp obtainedAccountStatementResp = service.getStatement(clientID, uuidSession);
+
+			assertThat(obtainedAccountStatementResp).isEqualTo(expectedAccountStatementResp);
+			verify(sessionsRepository, only()).findById(uuidSession);
+			verify(statementsRepository, only()).findOne(Example.of(toFindStatement));
+			verify(movementsRepository, only()).findByCustomerAndTimeBetween(clientID, since, until);
+		}
+
+		// Error handling
+		// --------------
+		catch (SimpleBankServiceException ex)
+		{
+			ex.printStackTrace();
+			assertTrue(false);
+		}
+		catch (Exception ex)
+		{
+			ex.printStackTrace();
+			assertTrue(false);
+		}
+	}
+	
+	// -----------------------------------------------------------------------------------------------------------------
 	// --------------------------------------------------------- shouldNotReturnTheAccountStatementBecauseExpiredSession
 	/**
 	 * Doesn't get valid account statement (expired session).
