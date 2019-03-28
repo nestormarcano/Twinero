@@ -33,9 +33,10 @@ public class SessionDAO
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private UUID sessionID;
 
-	@Column(nullable = false, updatable = false)
-	@Temporal(TemporalType.TIMESTAMP)
 	@CreatedDate
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(	columnDefinition = "TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL",
+				nullable = true, updatable = false, insertable = false)
 	private Date time;
 
 	@ManyToOne

@@ -14,6 +14,7 @@ public class SignReqDTO
 	public static final String emailRegExp = "^[\\w!#$%&'*+/=?`{|}~^-]+(?:\\.[\\w!#$%&'*+/=?`{|}~^-]+)*"
 			+ "@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,6}$";
 
+	@NonNull
 	@Pattern(regexp = emailRegExp)
 	private String email;
 

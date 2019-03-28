@@ -151,7 +151,6 @@ public class WebLayerSessionsTest
 		Session serviceSession = new Session(email, password);
 		
 		String uriRequested = "/simpleBanking/sessions";
-		//String message = SessionReqDTO.emailRegExp;
 
 		this.mockMvc
 				.perform(post(uriRequested)
@@ -160,7 +159,6 @@ public class WebLayerSessionsTest
 						.characterEncoding("UTF-8"))
 				.andDo(print())
 				.andExpect(status().isBadRequest())
-				//.andExpect(content().string(containsString(message)))
 				.andExpect(content().string(containsString(uriRequested)))
 				.andExpect(content().contentType("application/json;charset=UTF-8"))
 				.andDo(document("sessions/notLoginMalformedEmail"))

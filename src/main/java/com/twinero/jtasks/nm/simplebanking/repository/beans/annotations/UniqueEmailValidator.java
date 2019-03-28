@@ -15,6 +15,8 @@ import com.twinero.jtasks.nm.simplebanking.repository.beans.SignDAO;
 // --------------------------------------------------------------------------------------------------------------------
 public class UniqueEmailValidator implements ConstraintValidator<UniqueEmail, String>
 {
+	public static final String EMAIL_IS_NULL = "email is null";
+	
 	private SignupsRepository signupsRepository;
 
 	public UniqueEmailValidator ( SignupsRepository signupsRepository )
@@ -23,9 +25,26 @@ public class UniqueEmailValidator implements ConstraintValidator<UniqueEmail, St
 	}
 
 	@Override
+	public void initialize (UniqueEmail constraintAnnotation )
+	{
+	}
+
+	@Override
 	public boolean isValid (String email,
 									ConstraintValidatorContext context )
 	{
-		return email != null && !signupsRepository.findOne(Example.of(new SignDAO(email, null))).isPresent();
+		if (email == null)
+		{
+			context.disableDefaultConstraintViolation();
+			context.buildConstraintViolationWithTemplate(EMAIL_IS_NULL)
+					.addPropertyNode("email")
+					.addConstraintViolation();
+			return false;
+		}
+
+		if (signupsRepository != null)
+			return !signupsRepository.findOne(Example.of(new SignDAO(email, null))).isPresent();
+
+		return true;
 	}
 }

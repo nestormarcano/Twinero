@@ -3,8 +3,11 @@ package com.twinero.jtasks.nm.simplebanking.web;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
 
 import org.modelmapper.ModelMapper;
@@ -112,8 +115,38 @@ public class SimpleBankingController
 
 		// Error handling
 		// --------------
-		catch (SimpleBankServiceException ex)
+		catch (ConstraintViolationException ex)
 		{
+			boolean alreadyExistsException = false;
+			Set<ConstraintViolation<?>> violations = ex.getConstraintViolations();
+			for (ConstraintViolation<?> constraintViolation : violations)
+			{
+				if (constraintViolation.getMessageTemplate().equals("{repository.beans.annotations.UniqueEmail.message}"))
+				{
+					alreadyExistsException = true;
+					break;
+				}
+			}
+			
+			if (alreadyExistsException == true)
+			{
+				SignRespDTO sign = new SignRespDTO(SignRespDTO.Status.ALREADY_EXISTS);
+				sign.setEmail(signReqDTO.getEmail());
+				return new ResponseEntity<String>(Util.asJsonString(sign), HttpStatus.CONFLICT);
+			}
+			else
+			{
+				ex.printStackTrace();
+				SignRespDTO sign = new SignRespDTO(SignRespDTO.Status.SERVER_ERROR);
+				sign.setEmail(signReqDTO.getEmail());
+				return new ResponseEntity<String>(Util.asJsonString(sign), HttpStatus.INTERNAL_SERVER_ERROR);
+			}
+		}
+		
+		// --------------
+		catch (Exception ex)
+		{
+			ex.printStackTrace();
 			SignRespDTO sign = new SignRespDTO(SignRespDTO.Status.SERVER_ERROR);
 			sign.setEmail(signReqDTO.getEmail());
 			return new ResponseEntity<String>(Util.asJsonString(sign), HttpStatus.INTERNAL_SERVER_ERROR);

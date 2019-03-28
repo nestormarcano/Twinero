@@ -9,7 +9,7 @@ import javax.validation.Constraint;
 import javax.validation.Payload;
 
 /**
- * Indicates thas an email field is unique in the BD.
+ * Indicates that an email field is unique in the BD.
  * @author Nestor Marcano.
  */
 // --------------------------------------------------------------------------------------------------------------------
@@ -18,6 +18,8 @@ import javax.validation.Payload;
 @Constraint(validatedBy = UniqueEmailValidator.class)
 public @interface UniqueEmail
 {
+	String field() default "{repository.beans.annotations.UniqueEmail}";
+	
 	String message() default "{repository.beans.annotations.UniqueEmail.message}";
 
 	Class<?>[] groups() default {};

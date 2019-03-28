@@ -39,13 +39,13 @@ public class SignDAO
 			+ "@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,6}$";
 
 	@Id
-	@Column(name = "customer_id")
+	@Column(name = "customer_id", nullable = false, updatable = false)
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long signID;
 
-	@NotBlank
-	@UniqueEmail
+	@NonNull
 	@Pattern(regexp = emailRegExp)
+	@UniqueEmail
 	@Column(columnDefinition = "VARCHAR(255) NOT NULL", nullable = false, updatable = true, unique = true)
 	private String email;
 
@@ -55,22 +55,23 @@ public class SignDAO
 	@Column(columnDefinition = "VARCHAR(255) NOT NULL", nullable = false, updatable = true)
 	private String password;
 
-	@Column(nullable = false, updatable = false)
-	@Temporal(TemporalType.TIMESTAMP)
 	@CreatedDate
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(	columnDefinition = "TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL",
+				nullable = true, insertable = false, updatable = false)
 	private Date createdAt;
 
-	@Column(nullable = false, updatable = true)
-	@Temporal(TemporalType.TIMESTAMP)
 	@LastModifiedDate
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(columnDefinition = "TIMESTAMP WITH TIME ZONE", nullable = true, insertable = false, updatable = true)
 	private Date updatedAt;
 
 	@OneToMany(mappedBy = "customer", cascade = CascadeType.ALL)
 	private Set<SessionDAO> sessions;
-	
+
 	@OneToMany(mappedBy = "customer", cascade = CascadeType.ALL)
 	private Set<MovementDAO> movements;
-	
+
 	@OneToMany(mappedBy = "customer", cascade = CascadeType.ALL)
 	private Set<StatementDAO> statements;
 
@@ -241,7 +242,7 @@ public class SignDAO
 	{
 		this.movements = newMovements;
 	}
-	
+
 	/**
 	 * @return the statements
 	 */

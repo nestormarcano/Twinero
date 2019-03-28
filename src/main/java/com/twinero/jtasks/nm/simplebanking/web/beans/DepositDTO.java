@@ -25,6 +25,7 @@ public class DepositDTO extends ClientBaseObject
 {
 	private long movementID;
 
+	@NonNull
 	@JsonSerialize(using = MoneySerializer.class)
 	private BigDecimal amount;
 

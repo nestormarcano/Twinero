@@ -10,9 +10,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.validation.ConstraintViolation;
+// import javax.validation.ConstraintViolation;
 import javax.validation.Valid;
-import javax.validation.Validator;
+// import javax.validation.Validator;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +28,7 @@ import com.twinero.jtasks.nm.simplebanking.repository.beans.StatementDAO;
 import com.twinero.jtasks.nm.simplebanking.repository.beans.MovementDAO;
 import com.twinero.jtasks.nm.simplebanking.repository.beans.SessionDAO;
 import com.twinero.jtasks.nm.simplebanking.repository.beans.SignDAO;
-import com.twinero.jtasks.nm.simplebanking.repository.beans.annotations.UniqueEmail;
+// import com.twinero.jtasks.nm.simplebanking.repository.beans.annotations.UniqueEmail;
 import com.twinero.jtasks.nm.simplebanking.repository.exception.SimpleBankServiceException;
 import com.twinero.jtasks.nm.simplebanking.service.beans.Balance;
 import com.twinero.jtasks.nm.simplebanking.service.beans.BalanceResp;
@@ -59,8 +59,8 @@ public class SimpleBankServiceImpl implements SimpleBankService
 	@Autowired
 	private StatementsRepository statementsRepository;
 
-	@Autowired
-	private Validator validator;
+	// @Autowired
+	// private Validator validator;
 
 	private ModelMapper modelMapper;
 
@@ -94,27 +94,11 @@ public class SimpleBankServiceImpl implements SimpleBankService
 	 */
 	// -----------------------------------------------------------------------------------------------------------------
 	@Override
-	public SignDAO signup (SignDAO sign )
+	public SignDAO signup (@Valid SignDAO sign )
 		throws SimpleBankServiceException
 	{
-		Set<ConstraintViolation<SignDAO>> violations = validator.validate(sign);
-		if (violations.isEmpty())
-		{
-			return signupsRepository.save(sign);
-		}
-		else
-		{
-			for (ConstraintViolation<SignDAO> constraintViolation : violations)
-			{
-				String constrainName = constraintViolation.getConstraintDescriptor().getAnnotation().annotationType()
-						.getSimpleName();
-				String uniqueEmailClassName = UniqueEmail.class.getSimpleName();
-				if (uniqueEmailClassName.equals(constrainName))
-					return sign;
-			}
-		}
-
-		throw new SimpleBankServiceException();
+		//sign.setCreatedAt(new Date());
+		return signupsRepository.save(sign);
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -127,46 +111,28 @@ public class SimpleBankServiceImpl implements SimpleBankService
 	public Session login (@Valid Session session )
 		throws SimpleBankServiceException
 	{
-		//try
-		{
-			SignDAO toFindSignDAO = new SignDAO(session.getEmail(), null);
-			Optional<SignDAO> foundOptionalSignDAO = signupsRepository.findOne(Example.of(toFindSignDAO));
+		SignDAO toFindSignDAO = new SignDAO(session.getEmail(), null);
+		Optional<SignDAO> foundOptionalSignDAO = signupsRepository.findOne(Example.of(toFindSignDAO));
 
-			if (foundOptionalSignDAO.isPresent())
+		if (foundOptionalSignDAO.isPresent())
+		{
+			SignDAO foundSignDAO = foundOptionalSignDAO.get();
+			if (foundSignDAO.getPassword().equals(session.getPassword()))
 			{
-				SignDAO foundSignDAO = foundOptionalSignDAO.get();
-				if (foundSignDAO.getPassword().equals(session.getPassword()))
-				{
-					SessionDAO sessionDAO = new SessionDAO(foundSignDAO);
-					sessionDAO = sessionsRepository.save(sessionDAO);
+				SessionDAO sessionDAO = new SessionDAO(foundSignDAO);
+				sessionDAO = sessionsRepository.save(sessionDAO);
 
-					session = new Session(sessionDAO.getSessionID().toString());
-					session.setClientID(foundSignDAO.getSignID());
-					session.setEmail(foundSignDAO.getEmail());
-					session.setSessionStatus(Session.Status.OK);
-					return session;
-				}
+				session = new Session(sessionDAO.getSessionID().toString());
+				session.setClientID(foundSignDAO.getSignID());
+				session.setEmail(foundSignDAO.getEmail());
+				session.setSessionStatus(Session.Status.OK);
+				return session;
 			}
-
-			session = new Session(Session.Status.UNAUTHORIZED);
-			session.setEmail(toFindSignDAO.getEmail());
-			return session;
 		}
 
-		/*
-		// Error handling
-		// --------------
-		catch (NoSuchElementException ex)
-		{
-			session.setSessionStatus(Session.Status.UNAUTHORIZED);
-			session.setPassword(null);
-			return session;
-		}
-		catch (Exception ex)
-		{
-			throw new SimpleBankServiceException();
-		}
-		*/
+		session = new Session(Session.Status.UNAUTHORIZED);
+		session.setEmail(toFindSignDAO.getEmail());
+		return session;
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
