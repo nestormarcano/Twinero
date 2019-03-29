@@ -24,7 +24,6 @@ import com.twinero.jtasks.nm.simplebanking.repository.SessionsRepository;
 import com.twinero.jtasks.nm.simplebanking.repository.SignupsRepository;
 import com.twinero.jtasks.nm.simplebanking.repository.beans.SessionDAO;
 import com.twinero.jtasks.nm.simplebanking.repository.beans.SignDAO;
-import com.twinero.jtasks.nm.simplebanking.repository.exception.SimpleBankServiceException;
 import com.twinero.jtasks.nm.simplebanking.service.SimpleBankService;
 import com.twinero.jtasks.nm.simplebanking.service.beans.Session;
 
@@ -90,11 +89,6 @@ public class ServiceLayerSessionsTest
 
 		// Error handling
 		// --------------
-		catch (SimpleBankServiceException ex)
-		{
-			ex.printStackTrace();
-			assertTrue(false);
-		}
 		catch (Exception ex)
 		{
 			ex.printStackTrace();

@@ -5,6 +5,7 @@ import java.util.UUID;
 import javax.validation.Valid;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.CannotCreateTransactionException;
 import org.springframework.validation.annotation.Validated;
 
 import com.twinero.jtasks.nm.simplebanking.repository.beans.SignDAO;
@@ -16,7 +17,7 @@ import com.twinero.jtasks.nm.simplebanking.service.beans.Session;
 import com.twinero.jtasks.nm.simplebanking.service.beans.Movement;
 
 /**
- * Service layer for the Simple Bank appliction.
+ * Service layer for the Simple Bank application.
  * @author Nestor Marcano
  */
 @Service
@@ -48,7 +49,7 @@ public interface SimpleBankService
 	 */
 	// -----------------------------------------------------------------------------------------------------------------
 	public Session login (@Valid Session session )
-		throws SimpleBankServiceException;
+		throws CannotCreateTransactionException;
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// ------------------------------------------------------------------------------------------------------ getBalance

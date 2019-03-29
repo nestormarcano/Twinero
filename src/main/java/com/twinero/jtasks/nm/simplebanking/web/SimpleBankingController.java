@@ -15,8 +15,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.CannotCreateTransactionException;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,7 +24,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.twinero.jtasks.nm.simplebanking.repository.beans.SignDAO;
@@ -121,7 +120,6 @@ public class SimpleBankingController
 		// --------------
 		catch (ValidationException ex)
 		{
-			ex.printStackTrace();
 			SignRespDTO sign = new SignRespDTO(SignRespDTO.Status.SERVER_ERROR);
 			sign.setEmail(signReqDTO.getEmail());
 			return new ResponseEntity<String>(Util.asJsonString(sign), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -158,7 +156,7 @@ public class SimpleBankingController
 
 		// Error handling
 		// --------------
-		catch (SimpleBankServiceException ex)
+		catch (CannotCreateTransactionException ex)
 		{
 			SessionRespDTO sessionRespDTO = new SessionRespDTO();
 			return new ResponseEntity<String>(Util.asJsonString(sessionRespDTO), HttpStatus.INTERNAL_SERVER_ERROR);

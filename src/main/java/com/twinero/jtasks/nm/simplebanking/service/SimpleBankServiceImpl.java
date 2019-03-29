@@ -10,14 +10,13 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
-// import javax.validation.ConstraintViolation;
 import javax.validation.Valid;
-// import javax.validation.Validator;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.CannotCreateTransactionException;
 import org.springframework.validation.annotation.Validated;
 
 import com.twinero.jtasks.nm.simplebanking.repository.MovementsRepository;
@@ -28,7 +27,6 @@ import com.twinero.jtasks.nm.simplebanking.repository.beans.StatementDAO;
 import com.twinero.jtasks.nm.simplebanking.repository.beans.MovementDAO;
 import com.twinero.jtasks.nm.simplebanking.repository.beans.SessionDAO;
 import com.twinero.jtasks.nm.simplebanking.repository.beans.SignDAO;
-// import com.twinero.jtasks.nm.simplebanking.repository.beans.annotations.UniqueEmail;
 import com.twinero.jtasks.nm.simplebanking.repository.exception.SimpleBankServiceException;
 import com.twinero.jtasks.nm.simplebanking.service.beans.Balance;
 import com.twinero.jtasks.nm.simplebanking.service.beans.BalanceResp;
@@ -104,7 +102,7 @@ public class SimpleBankServiceImpl implements SimpleBankService
 	// -----------------------------------------------------------------------------------------------------------------
 	@Override
 	public Session login (@Valid Session session )
-		throws SimpleBankServiceException
+		throws CannotCreateTransactionException
 	{
 		SignDAO toFindSignDAO = new SignDAO(session.getEmail());
 		Optional<SignDAO> foundOptionalSignDAO = signupsRepository.findOne(Example.of(toFindSignDAO));

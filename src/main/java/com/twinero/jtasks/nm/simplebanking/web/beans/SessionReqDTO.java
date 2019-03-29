@@ -14,6 +14,8 @@ public class SessionReqDTO
 	public static final String emailRegExp = "^[\\w!#$%&'*+/=?`{|}~^-]+(?:\\.[\\w!#$%&'*+/=?`{|}~^-]+)*"
 			+ "@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,6}$";
 
+	@NonNull
+	@NotBlank
 	@Pattern(regexp = emailRegExp)
 	private String email;
 

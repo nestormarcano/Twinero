@@ -25,12 +25,13 @@ public class Session extends ClientBaseObject
 
 	private String sessionID;
 	
+	@NotNull
 	@NotBlank
 	@Pattern(regexp = emailRegExp)
 	private String email;
 	
-	@NotBlank
 	@NotNull
+	@NotBlank
 	private String password;
 	
 	private Status sessionStatus;
