@@ -34,8 +34,7 @@ public interface SimpleBankService
 	 * @throws SimpleBankServiceException Object indicating a service error.
 	 */
 	// -----------------------------------------------------------------------------------------------------------------
-	public SignDAO signup (@Valid SignDAO sign )
-		throws SimpleBankServiceException;
+	public SignDAO signup (@Valid SignDAO sign );
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// ----------------------------------------------------------------------------------------------------------- login

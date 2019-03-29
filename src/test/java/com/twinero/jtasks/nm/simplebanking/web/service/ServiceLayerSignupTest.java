@@ -2,15 +2,14 @@ package com.twinero.jtasks.nm.simplebanking.web.service;
 
 import static org.junit.Assert.assertTrue;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.only;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Optional;
-import java.util.Set;
 
-import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 
 import org.junit.Test;
@@ -24,8 +23,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.twinero.jtasks.nm.simplebanking.repository.SignupsRepository;
 import com.twinero.jtasks.nm.simplebanking.repository.beans.SignDAO;
-import com.twinero.jtasks.nm.simplebanking.repository.beans.annotations.UniqueEmailValidator;
-import com.twinero.jtasks.nm.simplebanking.repository.exception.SimpleBankServiceException;
 import com.twinero.jtasks.nm.simplebanking.service.SimpleBankService;
 
 @SpringBootTest
@@ -69,11 +66,6 @@ public class ServiceLayerSignupTest
 
 		// Error handling
 		// --------------
-		catch (SimpleBankServiceException ex)
-		{
-			ex.printStackTrace();
-			assertTrue(false);
-		}
 		catch (Exception ex)
 		{
 			ex.printStackTrace();
@@ -91,46 +83,14 @@ public class ServiceLayerSignupTest
 	@Test
 	public void shouldNotSignupEmailNull ()
 	{
-		try
-		{
 			SignDAO sign = new SignDAO();
 
-			try
+			assertThatThrownBy( () ->
 			{
 				service.signup(sign);
-			}
-			catch (SimpleBankServiceException ex)
-			{
-				verify(signupsRepository, times(0)).save(sign);
-			}
-
+			}, "", ConstraintViolationException.class);
+			
 			verify(signupsRepository, times(0)).save(sign);
-		}
-
-		// Error handling
-		// --------------
-		catch (ConstraintViolationException ex)
-		{
-			boolean rightException = false;
-			Set<ConstraintViolation<?>> violations = ex.getConstraintViolations();
-			for (ConstraintViolation<?> constraintViolation : violations)
-			{
-				if (constraintViolation.getMessageTemplate().equals(UniqueEmailValidator.EMAIL_IS_NULL))
-				{
-					rightException = true;
-					break;
-				}
-			}
-
-			assertTrue(rightException);
-		}
-
-		// --------------
-		catch (Exception ex)
-		{
-			ex.printStackTrace();
-			assertTrue(false);
-		}
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -143,55 +103,23 @@ public class ServiceLayerSignupTest
 	@Test
 	public void shouldNotSignupEmailMalformed ()
 	{
-		try
+		// -------------------------------------------------------------------
+		String email = "nestor marcano@gmail.com";
+		String password = "123456";
+
+		SignDAO sign = new SignDAO(email, password);
+
+		assertThatThrownBy( () ->
 		{
-			// -------------------------------------------------------------------
-			String email = "nestor marcano@gmail.com";
-			String password = "123456";
+			service.signup(sign);
+		}, "", ConstraintViolationException.class);
 
-			SignDAO sign = new SignDAO(email, password);
-			try
-			{
-				service.signup(sign);
-			}
-			catch (SimpleBankServiceException ex)
-			{
-				verify(signupsRepository, times(0)).save(sign);
-			}
-
-			verify(signupsRepository, times(0)).save(sign);
-		}
-
-		// Error handling
-		// --------------
-		catch (ConstraintViolationException ex)
-		{
-			boolean rightException = false;
-			Set<ConstraintViolation<?>> violations = ex.getConstraintViolations();
-			for (ConstraintViolation<?> constraintViolation : violations)
-			{
-				if (constraintViolation.getConstraintDescriptor().getAnnotation().annotationType().getCanonicalName()
-						.equals("javax.validation.constraints.Pattern"))
-				{
-					rightException = true;
-					break;
-				}
-			}
-
-			assertTrue(rightException);
-		}
-
-		// --------------
-		catch (Exception ex)
-		{
-			ex.printStackTrace();
-			assertTrue(false);
-		}
+		verify(signupsRepository, times(0)).save(sign);
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// -------------------------------------------------------------------------------- shouldNotSignupPasswordMalformed
-	/* *
+	/**
 	 * Performs a not valid sign up because the sign password is malformed.
 	 * Runs with: mvn -Dtest=ServiceLayerSignupTest#shouldNotSignupPasswordMalformed test
 	 */
@@ -199,54 +127,22 @@ public class ServiceLayerSignupTest
 	@Test
 	public void shouldNotSignupPasswordMalformed ()
 	{
-		try
-		{
-			String email = "nestor.marcano@gmail.com";
-			String password = "123 456";
-			
-			SignDAO sign = new SignDAO(email, password);
-			
-			try
-			{
-				service.signup(sign);
-			}
-			catch (SimpleBankServiceException ex)
-			{
-				verify(signupsRepository, times(0)).save(sign);
-			}
-	
-			verify(signupsRepository, times(0)).save(sign);
-		}
-	
-		// Error handling
-		// --------------
-		catch (ConstraintViolationException ex)
-		{
-			boolean rightException = false;
-			Set<ConstraintViolation<?>> violations = ex.getConstraintViolations();
-			for (ConstraintViolation<?> constraintViolation : violations)
-			{
-				if (constraintViolation.getMessageTemplate().equals("{web.beans.annotations.Password.message}"))
-				{
-					rightException = true;
-					break;
-				}
-			}
+		String email = "nestor.marcano@gmail.com";
+		String password = "123 456";
 
-			assertTrue(rightException);
-		}
+		SignDAO sign = new SignDAO(email, password);
 
-		// --------------
-		catch (Exception ex)
+		assertThatThrownBy( () ->
 		{
-			ex.printStackTrace();
-			assertTrue(false);
-		}
+			service.signup(sign);
+		}, "", ConstraintViolationException.class);
+
+		verify(signupsRepository, times(0)).save(sign);
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// ------------------------------------------------------------------------------------- shouldNotSignupAlreadyExist
-	/* *
+	/**
 	 * Performs a not valid sign up because the client already exists.
 	 * Runs with: mvn -Dtest=ServiceLayerSignupTest#shouldNotSignupAlreadyExist test
 	 */
@@ -254,51 +150,24 @@ public class ServiceLayerSignupTest
 	@Test
 	public void shouldNotSignupAlreadyExist ()
 	{
-		try
-		{
-			long signID = 123L;
-			String email = "nestor.marcano@gmail.com";
-			String password = "123456";
-			
-			SignDAO sign = new SignDAO(email, password);
-			SignDAO signWithoutPass = new SignDAO(email, null);
-			SignDAO expectedSignDAO = new SignDAO(email, password);
-	
-			SignDAO foundSignDAO = new SignDAO(signID);
-			foundSignDAO.setEmail(email);
-			Optional<SignDAO> foundOptionalSignDAO = Optional.of(foundSignDAO);
-			
-			when(signupsRepository.findOne(Example.of(signWithoutPass))).thenReturn(foundOptionalSignDAO);
-	
-			SignDAO obtinedSignDAO = service.signup(sign);
-	
-			assertThat(obtinedSignDAO).isEqualTo(expectedSignDAO);
-			verify(signupsRepository, only()).findOne(Example.of(signWithoutPass));
-		}
-	
-		// Error handling
-		// --------------
-		catch (ConstraintViolationException ex)
-		{
-			boolean rightException = false;
-			Set<ConstraintViolation<?>> violations = ex.getConstraintViolations();
-			for (ConstraintViolation<?> constraintViolation : violations)
-			{
-				if (constraintViolation.getMessageTemplate().equals("{repository.beans.annotations.UniqueEmail.message}"))
-				{
-					rightException = true;
-					break;
-				}
-			}
+		long signID = 123L;
+		String email = "nestor.marcano@gmail.com";
+		String password = "123456";
 
-			assertTrue(rightException);
-		}
+		SignDAO sign = new SignDAO(email, password);
+		SignDAO signWithoutPass = new SignDAO(email);
 
-		// --------------
-		catch (Exception ex)
+		SignDAO foundSignDAO = new SignDAO(signID);
+		foundSignDAO.setEmail(email);
+		Optional<SignDAO> foundOptionalSignDAO = Optional.of(foundSignDAO);
+
+		when(signupsRepository.findOne(Example.of(signWithoutPass))).thenReturn(foundOptionalSignDAO);
+
+		assertThatThrownBy( () ->
 		{
-			ex.printStackTrace();
-			assertTrue(false);
-		}
+			service.signup(sign);
+		}, "", ConstraintViolationException.class);
+
+		verify(signupsRepository, only()).findOne(Example.of(signWithoutPass));
 	}
 }

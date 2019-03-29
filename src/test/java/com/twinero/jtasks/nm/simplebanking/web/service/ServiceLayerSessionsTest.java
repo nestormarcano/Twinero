@@ -76,7 +76,7 @@ public class ServiceLayerSessionsTest
 			serviceExpectedSession.setEmail(email);
 			serviceExpectedSession.setSessionStatus(Session.Status.OK);
 
-			SignDAO signWithoutPass = new SignDAO(email, null);
+			SignDAO signWithoutPass = new SignDAO(email);
 
 			when(signupsRepository.findOne(Example.of(signWithoutPass))).thenReturn(Optional.of(customerFoundSignDAO));
 			when(sessionsRepository.save(toRepositorySaveSessionDAO)).thenReturn(fromRepositorySaveSessionDAO);
@@ -122,7 +122,7 @@ public class ServiceLayerSessionsTest
 			serviceExpectedSession.setEmail(email);
 			serviceExpectedSession.setSessionStatus(Session.Status.UNAUTHORIZED);
 
-			SignDAO signWithoutPass = new SignDAO(email, null);
+			SignDAO signWithoutPass = new SignDAO(email);
 
 			when(signupsRepository.findOne(Example.of(signWithoutPass))).thenReturn(Optional.empty());
 
@@ -161,7 +161,7 @@ public class ServiceLayerSessionsTest
 			serviceExpectedSession.setEmail(email);
 			serviceExpectedSession.setSessionStatus(Session.Status.UNAUTHORIZED);
 
-			SignDAO signWithoutPass = new SignDAO(email, null);
+			SignDAO signWithoutPass = new SignDAO(email);
 
 			SignDAO foundSignDAO = new SignDAO(signID);
 			foundSignDAO.setEmail(email);
@@ -205,7 +205,7 @@ public class ServiceLayerSessionsTest
 			customerFoundSignDAO.setPassword(password);
 
 			SessionDAO toRepositorySaveSessionDAO = new SessionDAO(customerFoundSignDAO);
-			SignDAO signWithoutPass = new SignDAO(email, null);
+			SignDAO signWithoutPass = new SignDAO(email);
 
 			try
 			{
@@ -254,7 +254,7 @@ public class ServiceLayerSessionsTest
 			customerFoundSignDAO.setPassword(password);
 
 			SessionDAO toRepositorySaveSessionDAO = new SessionDAO(customerFoundSignDAO);
-			SignDAO signWithoutPass = new SignDAO(email, null);
+			SignDAO signWithoutPass = new SignDAO(email);
 
 			try
 			{

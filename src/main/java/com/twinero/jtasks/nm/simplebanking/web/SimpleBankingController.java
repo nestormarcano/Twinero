@@ -3,12 +3,11 @@ package com.twinero.jtasks.nm.simplebanking.web;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.HashSet;
-import java.util.Set;
 import java.util.UUID;
 
-import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
+import javax.validation.ValidationException;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +15,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.twinero.jtasks.nm.simplebanking.repository.beans.SignDAO;
@@ -53,6 +55,7 @@ import com.twinero.jtasks.nm.simplebanking.web.beans.WithdrawRespDTO;
  * @author Nestor Marcano.
  */
 // --------------------------------------------------------------------------------------------------------------------
+@Validated
 @RestController
 @RequestMapping("/simpleBanking")
 public class SimpleBankingController
@@ -98,53 +101,25 @@ public class SimpleBankingController
 			SignRespDTO signRespDTO = modelMapper.map(sign, SignRespDTO.class);
 			HttpStatus httpStatus;
 
-			if (signRespDTO.getSignID() == 0L)
-			{
-				signRespDTO.setStatus(SignRespDTO.Status.ALREADY_EXISTS);
-				httpStatus = HttpStatus.CONFLICT;
-			}
-			else if (signRespDTO.getSignID() > 0L)
-			{
-				signRespDTO.setStatus(SignRespDTO.Status.OK);
-				httpStatus = HttpStatus.CREATED;
-			}
-			else throw new SimpleBankServiceException();
+			signRespDTO.setStatus(SignRespDTO.Status.OK);
+			httpStatus = HttpStatus.CREATED;
 
 			return new ResponseEntity<String>(Util.asJsonString(signRespDTO), httpStatus);
 		}
 
 		// Error handling
 		// --------------
+		
+		// In actual method, the ConstraintViolationException is throws by service.signup
+		// only if the email in sign already exists.
 		catch (ConstraintViolationException ex)
 		{
-			boolean alreadyExistsException = false;
-			Set<ConstraintViolation<?>> violations = ex.getConstraintViolations();
-			for (ConstraintViolation<?> constraintViolation : violations)
-			{
-				if (constraintViolation.getMessageTemplate().equals("{repository.beans.annotations.UniqueEmail.message}"))
-				{
-					alreadyExistsException = true;
-					break;
-				}
-			}
-			
-			if (alreadyExistsException == true)
-			{
-				SignRespDTO sign = new SignRespDTO(SignRespDTO.Status.ALREADY_EXISTS);
-				sign.setEmail(signReqDTO.getEmail());
-				return new ResponseEntity<String>(Util.asJsonString(sign), HttpStatus.CONFLICT);
-			}
-			else
-			{
-				ex.printStackTrace();
-				SignRespDTO sign = new SignRespDTO(SignRespDTO.Status.SERVER_ERROR);
-				sign.setEmail(signReqDTO.getEmail());
-				return new ResponseEntity<String>(Util.asJsonString(sign), HttpStatus.INTERNAL_SERVER_ERROR);
-			}
+			SignRespDTO sign = new SignRespDTO(SignRespDTO.Status.ALREADY_EXISTS);
+			sign.setEmail(signReqDTO.getEmail());
+			return new ResponseEntity<String>(Util.asJsonString(sign), HttpStatus.CONFLICT);
 		}
-		
 		// --------------
-		catch (Exception ex)
+		catch (ValidationException ex)
 		{
 			ex.printStackTrace();
 			SignRespDTO sign = new SignRespDTO(SignRespDTO.Status.SERVER_ERROR);
@@ -381,7 +356,7 @@ public class SimpleBankingController
 			return new ResponseEntity<String>(Util.asJsonString(withdrawRespDTO), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
-	
+
 	// ---------------------------------------------------------------------------------- convertToAccountBalanceRespDTO
 	// -----------------------------------------------------------------------------------------------------------------
 	/**
@@ -400,7 +375,7 @@ public class SimpleBankingController
 
 		return balanceRespDTO;
 	}
-	
+
 	// -------------------------------------------------------------------------------- convertToAccountStatementRespDTO
 	// -----------------------------------------------------------------------------------------------------------------
 	/**
@@ -430,7 +405,7 @@ public class SimpleBankingController
 
 		return statementRespDTO;
 	}
-	
+
 	// ------------------------------------------------------------------------------------------------ convertToDeposit
 	// -----------------------------------------------------------------------------------------------------------------
 	/**
@@ -485,7 +460,7 @@ public class SimpleBankingController
 	private Movement convertToWithdraw (WithdrawDTO withdrawDTO )
 		throws ParseException
 	{
-		//Movement withdraw = modelMapper.map(withdrawDTO, Movement.class);
+		// Movement withdraw = modelMapper.map(withdrawDTO, Movement.class);
 		Movement withdraw = new Movement();
 		withdraw.setAmount(withdrawDTO.getAmount());
 		withdraw.setClientID(withdrawDTO.getClientID());
@@ -513,4 +488,27 @@ public class SimpleBankingController
 		}
 		return withdrawRespDTO;
 	}
+
+	/* *
+	 * Handles the ConstraintViolationException throws by the validation of
+	 * Path Variables and Request Parameters.
+	 * <p>
+	 * In contrast to request body validation a failed validation will trigger a
+	 * ConstraintViolationException instead of a MethodArgumentNotValidException. Spring does not
+	 * register a default exception handler for this exception, so it will by default cause a
+	 * response with HTTP status 500 (Internal Server Error).
+	 * <p>
+	 * If we want to return a HTTP status 400 instead (which makes sense,
+	 * since the client provided an invalid parameter, making it a bad request), we can add a
+	 * custom exception handler to our controller.
+	 * 
+	 * @param e The ConstraintViolationException.
+	 * @return A ResponseEntity with the BAD_REQUEST HttpStatus.
+	 */
+	//@ExceptionHandler(ConstraintViolationException.class)
+	//@ResponseStatus(HttpStatus.BAD_REQUEST)
+	//ResponseEntity<String> handleConstraintViolationException (ConstraintViolationException e )
+	//{
+	//	return new ResponseEntity<>("Not valid due to validation error: " + e.getMessage(), HttpStatus.BAD_REQUEST);
+	//}
 }

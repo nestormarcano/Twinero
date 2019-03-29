@@ -91,6 +91,16 @@ public class SignDAO
 	{
 		this.signID = theSignID;
 	}
+	
+	/**
+	 * Constructor with email.
+	 * 
+	 * @param email    Customer's email.
+	 */
+	public SignDAO (	String email )
+	{
+		this.email = email;
+	}
 
 	/**
 	 * Constructor with email and password.

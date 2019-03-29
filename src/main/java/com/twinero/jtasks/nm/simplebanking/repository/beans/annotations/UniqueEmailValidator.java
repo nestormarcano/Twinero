@@ -43,7 +43,7 @@ public class UniqueEmailValidator implements ConstraintValidator<UniqueEmail, St
 		}
 
 		if (signupsRepository != null)
-			return !signupsRepository.findOne(Example.of(new SignDAO(email, null))).isPresent();
+			return !signupsRepository.findOne(Example.of(new SignDAO(email))).isPresent();
 
 		return true;
 	}

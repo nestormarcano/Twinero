@@ -15,7 +15,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.twinero.jtasks.nm.simplebanking.repository.beans.SignDAO;
-import com.twinero.jtasks.nm.simplebanking.repository.exception.SimpleBankServiceException;
 import com.twinero.jtasks.nm.simplebanking.service.SimpleBankService;
 import com.twinero.jtasks.nm.simplebanking.utils.Util;
 import com.twinero.jtasks.nm.simplebanking.web.SimpleBankingController;
@@ -33,6 +32,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import javax.validation.ConstraintViolationException;
+import javax.validation.ValidationException;
 
 @RunWith(SpringRunner.class)
 @WebMvcTest(SimpleBankingController.class)
@@ -106,12 +108,10 @@ public class WebLayerSignupsTest
 		SignDAO sign = new SignDAO(email, password);
 		SignReqDTO signReqDTO = new SignReqDTO(email, password);
 		
-		SignDAO expectedSignFromService = new SignDAO(email, password);
-		
 		SignRespDTO expectedSignRespDTO = new SignRespDTO(SignRespDTO.Status.ALREADY_EXISTS);
 		expectedSignRespDTO.setEmail(email);
 		
-		when(service.signup(sign)).thenReturn(expectedSignFromService);
+		when(service.signup(sign)).thenThrow(ConstraintViolationException.class);
 		
 		this.mockMvc
 				.perform(post("/simpleBanking/signups")
@@ -146,7 +146,6 @@ public class WebLayerSignupsTest
 		SignDAO sign = new SignDAO(email, password);
 		SignReqDTO signReqDTO = new SignReqDTO(email, password);
 
-		//String message = SignReqDTO.emailRegExp;
 		String uriRequested = "/simpleBanking/signups";
 
 		this.mockMvc
@@ -156,7 +155,6 @@ public class WebLayerSignupsTest
 						.characterEncoding("UTF-8"))
 				.andDo(print())
 				.andExpect(status().isBadRequest())
-				//.andExpect(content().string(containsString(message)))
 				.andExpect(content().string(containsString(uriRequested)))
 				.andExpect(content().contentType("application/json;charset=UTF-8"))
 				.andDo(document("signups/notSignupMalformedEmail"))
@@ -223,7 +221,7 @@ public class WebLayerSignupsTest
 		SignRespDTO expectedSignRespDTO = new SignRespDTO(SignRespDTO.Status.SERVER_ERROR);
 		expectedSignRespDTO.setEmail(email);
 		
-		when(service.signup(sign)).thenThrow(SimpleBankServiceException.class);
+		when(service.signup(sign)).thenThrow(ValidationException.class);
 		
 		this.mockMvc
 				.perform(post("/simpleBanking/signups")

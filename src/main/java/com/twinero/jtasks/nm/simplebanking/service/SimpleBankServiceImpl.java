@@ -59,9 +59,6 @@ public class SimpleBankServiceImpl implements SimpleBankService
 	@Autowired
 	private StatementsRepository statementsRepository;
 
-	// @Autowired
-	// private Validator validator;
-
 	private ModelMapper modelMapper;
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -95,9 +92,7 @@ public class SimpleBankServiceImpl implements SimpleBankService
 	// -----------------------------------------------------------------------------------------------------------------
 	@Override
 	public SignDAO signup (@Valid SignDAO sign )
-		throws SimpleBankServiceException
 	{
-		//sign.setCreatedAt(new Date());
 		return signupsRepository.save(sign);
 	}
 
@@ -111,7 +106,7 @@ public class SimpleBankServiceImpl implements SimpleBankService
 	public Session login (@Valid Session session )
 		throws SimpleBankServiceException
 	{
-		SignDAO toFindSignDAO = new SignDAO(session.getEmail(), null);
+		SignDAO toFindSignDAO = new SignDAO(session.getEmail());
 		Optional<SignDAO> foundOptionalSignDAO = signupsRepository.findOne(Example.of(toFindSignDAO));
 
 		if (foundOptionalSignDAO.isPresent())
